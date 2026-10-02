@@ -1,37 +1,21 @@
-# Dependencies
 node_modules/
-client/node_modules/
-server/node_modules/
 
-# Environment
 .env
 .env.*
 !.env.example
 
-# Build
 dist/
 build/
-client/dist/
-server/dist/
 
-# Logs
 *.log
 logs/
 
-# OS
-.DS_Store
-Thumbs.db
+coverage/
 
-# IDE
 .vscode/
 .idea/
 
-# Docker
+.DS_Store
+Thumbs.db
+
 docker-data/
-
-# Coverage
-coverage/
-
-# Temporary
-tmp/
-temp/
