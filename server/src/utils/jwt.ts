@@ -12,14 +12,38 @@ export interface AuthTokenPayload {
   role: "user" | "admin";
 }
 
+export interface GeneratedAccessToken {
+  token: string;
+  expiresAt: Date;
+}
+
 export function generateAccessToken(
   payload: AuthTokenPayload,
-): string {
+): GeneratedAccessToken {
   const options: SignOptions = {
     expiresIn: JWT_EXPIRES_IN as SignOptions["expiresIn"],
   };
 
-  return jwt.sign(payload, JWT_SECRET, options);
+  const token = jwt.sign(
+    payload,
+    JWT_SECRET,
+    options,
+  );
+
+  const decoded = jwt.decode(token);
+
+  if (
+    !decoded ||
+    typeof decoded === "string" ||
+    typeof decoded.exp !== "number"
+  ) {
+    throw new Error("Failed to determine JWT expiration");
+  }
+
+  return {
+    token,
+    expiresAt: new Date(decoded.exp * 1000),
+  };
 }
 
 export function verifyAccessToken(

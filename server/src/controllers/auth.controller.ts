@@ -1,7 +1,13 @@
 import type { Request, Response } from "express";
 
-import { registerSchema } from "../validation/auth.js";
+import {
+  AUTH_COOKIE_NAME,
+  authCookieOptions,
+  AUTH_COOKIE_MAX_AGE
+} from "../config/auth.js";
 import { registerUser } from "../services/auth.service.js";
+import { createSession } from "../services/session.service.js";
+import { registerSchema } from "../validation/auth.js";
 
 export async function register(
   req: Request,
@@ -22,6 +28,20 @@ export async function register(
   try {
     const user = await registerUser(result.data);
 
+    const { token } = await createSession({
+      userId: user.id,
+      role: user.role,
+    });
+
+    res.cookie(
+      AUTH_COOKIE_NAME,
+      token,
+      {
+        ...authCookieOptions,
+        maxAge: AUTH_COOKIE_MAX_AGE,
+      },
+    );
+
     res.status(201).json({
       success: true,
       message: "Account created successfully",
@@ -35,6 +55,18 @@ export async function register(
       res.status(409).json({
         success: false,
         message: "An account with this email already exists",
+      });
+
+      return;
+    }
+
+    if (
+      error instanceof Error &&
+      error.message === "INVALID_USER_ID"
+    ) {
+      res.status(500).json({
+        success: false,
+        message: "Unable to create authentication session",
       });
 
       return;
