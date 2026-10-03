@@ -1,12 +1,19 @@
 import { ObjectId } from "mongodb";
 
-import { servicesCollection, checkLogsCollection } from "../config/collections.js";
+import {
+  servicesCollection,
+  checkLogsCollection,
+} from "../config/collections.js";
+
 import type { ServiceDocument } from "../types/database.js";
+
 import type {
   CreateServiceInput,
   UpdateServiceInput,
 } from "../validation/service.js";
+
 import { checkHttpEndpoint } from "../utils/http-checker.js";
+import { calculateServiceMetrics } from "../utils/service-metrics.js";
 
 export type MonitoringWindow =
   | "24h"
@@ -26,6 +33,7 @@ function getMonitoringWindowStart(
 
   return new Date(now - durationMs);
 }
+
 export interface SafeService {
   id: string;
   name: string;
@@ -243,7 +251,7 @@ export async function pingService(
 
   const nextCheckAt = new Date(
     checkedAt.getTime() +
-    service.intervalSeconds * 1000,
+      service.intervalSeconds * 1000,
   );
 
   const update: Partial<ServiceDocument> = {
@@ -388,46 +396,7 @@ export async function getServiceSummary(
     })
     .toArray();
 
-  const totalChecks = checks.length;
-
-  const successfulChecks = checks.filter(
-    (check) => check.status === "success",
-  ).length;
-
-  const failedChecks =
-    totalChecks - successfulChecks;
-
-  const responseTimes = checks
-    .map((check) => check.responseTime)
-    .filter((value): value is number => value !== null);
-
-  const averageResponseTime =
-    responseTimes.length > 0
-      ? Math.round(
-        responseTimes.reduce((sum, value) => sum + value, 0) /
-        responseTimes.length,
-      )
-      : null;
-
-  const minimumResponseTime =
-    responseTimes.length > 0
-      ? Math.min(...responseTimes)
-      : null;
-
-  const maximumResponseTime =
-    responseTimes.length > 0
-      ? Math.max(...responseTimes)
-      : null;
-
-  const uptimePercentage =
-    totalChecks > 0
-      ? Number(
-        (
-          (successfulChecks / totalChecks) *
-          100
-        ).toFixed(2),
-      )
-      : null;
+  const metrics = calculateServiceMetrics(checks);
 
   const latestCheck = checks[0] ?? null;
 
@@ -445,23 +414,17 @@ export async function getServiceSummary(
     },
     metrics: {
       window,
-      totalChecks,
-      successfulChecks,
-      failedChecks,
-      uptimePercentage,
-      averageResponseTime,
-      minimumResponseTime,
-      maximumResponseTime,
+      ...metrics,
     },
     latestCheck: latestCheck
       ? {
-        id: latestCheck._id!.toString(),
-        status: latestCheck.status,
-        statusCode: latestCheck.statusCode,
-        responseTime: latestCheck.responseTime,
-        error: latestCheck.error,
-        checkedAt: latestCheck.checkedAt,
-      }
+          id: latestCheck._id!.toString(),
+          status: latestCheck.status,
+          statusCode: latestCheck.statusCode,
+          responseTime: latestCheck.responseTime,
+          error: latestCheck.error,
+          checkedAt: latestCheck.checkedAt,
+        }
       : null,
   };
 }
