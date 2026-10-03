@@ -1,11 +1,12 @@
 import { ObjectId } from "mongodb";
 
-import { servicesCollection } from "../config/collections.js";
+import { servicesCollection,checkLogsCollection } from "../config/collections.js";
 import type { ServiceDocument } from "../types/database.js";
 import type {
   CreateServiceInput,
   UpdateServiceInput,
 } from "../validation/service.js";
+import { checkHttpEndpoint } from "../utils/http-checker.js";
 
 export interface SafeService {
   id: string;
@@ -178,4 +179,113 @@ export async function deleteService(
   });
 
   return result.deletedCount === 1;
+}
+
+export async function pingService(
+  userId: string,
+  serviceId: string,
+): Promise<{
+  service: SafeService;
+  check: {
+    status: "success" | "failed" | "timeout" | "error";
+    statusCode: number | null;
+    responseTime: number | null;
+    error: string | null;
+    checkedAt: Date;
+  };
+} | null> {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return null;
+  }
+
+  const service = await servicesCollection().findOne({
+    _id: new ObjectId(serviceId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!service || !service._id) {
+    return null;
+  }
+
+  if (!service.enabled) {
+    throw new Error("SERVICE_DISABLED");
+  }
+
+  const checkedAt = new Date();
+
+  const result = await checkHttpEndpoint({
+    baseUrl: service.url,
+    endpoint: service.endpoint,
+    method: service.method,
+    timeoutSeconds: service.timeoutSeconds,
+  });
+
+  const nextCheckAt = new Date(
+    checkedAt.getTime() +
+      service.intervalSeconds * 1000,
+  );
+
+  const update: Partial<ServiceDocument> = {
+    status:
+      result.status === "success"
+        ? "online"
+        : "offline",
+    lastCheckedAt: checkedAt,
+    lastStatusCode: result.statusCode,
+    lastResponseTime: result.responseTime,
+    lastError: result.error,
+    nextCheckAt,
+    updatedAt: checkedAt,
+  };
+
+  if (result.status === "success") {
+    update.lastSuccessAt = checkedAt;
+  }
+
+  await servicesCollection().updateOne(
+    {
+      _id: service._id,
+      userId: new ObjectId(userId),
+    },
+    {
+      $set: update,
+    },
+  );
+
+  await checkLogsCollection().insertOne({
+    serviceId: service._id,
+    userId: new ObjectId(userId),
+    status: result.status,
+    statusCode: result.statusCode,
+    responseTime: result.responseTime,
+    error: result.error,
+    checkedAt,
+    createdAt: checkedAt,
+  });
+
+  const updatedService =
+    await servicesCollection().findOne({
+      _id: service._id,
+      userId: new ObjectId(userId),
+    });
+
+  if (!updatedService) {
+    throw new Error(
+      "SERVICE_DISAPPEARED_AFTER_CHECK",
+    );
+  }
+
+  return {
+    service: toSafeService(updatedService),
+    check: {
+      status: result.status,
+      statusCode: result.statusCode,
+      responseTime: result.responseTime,
+      error: result.error,
+      checkedAt,
+    },
+  };
 }

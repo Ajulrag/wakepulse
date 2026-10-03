@@ -5,6 +5,7 @@ import {
   deleteServiceController,
   getServiceByIdController,
   getUserServicesController,
+  pingServiceController,
   updateServiceController,
 } from "../controllers/service.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
@@ -21,6 +22,12 @@ router.get(
   "/",
   requireAuth,
   getUserServicesController,
+);
+
+router.post(
+  "/:id/ping",
+  requireAuth,
+  pingServiceController,
 );
 
 router.get(
@@ -40,5 +47,6 @@ router.delete(
   requireAuth,
   deleteServiceController,
 );
+
 
 export default router;

@@ -5,6 +5,7 @@ import {
   deleteService,
   getServiceById,
   getUserServices,
+  pingService,
   updateService,
 } from "../services/service.service.js";
 import {
@@ -262,6 +263,73 @@ export async function deleteServiceController(
     res.status(500).json({
       success: false,
       message: "Unable to delete service",
+    });
+  }
+}
+
+export async function pingServiceController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!req.auth) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+
+      return;
+    }
+
+    const result = await pingService(
+      req.auth.sub,
+      id,
+    );
+
+    if (!result) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Service ping completed",
+      service: result.service,
+      check: result.check,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "SERVICE_DISABLED"
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "Service is disabled",
+      });
+
+      return;
+    }
+
+    console.error("Ping service error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to ping service",
     });
   }
 }
