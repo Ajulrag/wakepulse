@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { ObjectId } from "mongodb";
 import {
   AUTH_COOKIE_NAME,
   authCookieOptions,
@@ -7,6 +8,7 @@ import {
 import { authenticateUser, registerUser } from "../services/auth.service.js";
 import { createSession } from "../services/session.service.js";
 import { loginSchema, registerSchema } from "../validation/auth.js";
+import { usersCollection } from "../config/collections.js";
 
 export async function register(
   req: Request,
@@ -148,6 +150,72 @@ export async function login(
     res.status(500).json({
       success: false,
       message: "Unable to login",
+    });
+  }
+}
+
+export async function getCurrentUser(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  if (!req.auth) {
+    res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+
+    return;
+  }
+
+  try {
+    if (!ObjectId.isValid(req.auth.sub)) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid authentication user",
+      });
+
+      return;
+    }
+
+    const user = await usersCollection().findOne({
+      _id: new ObjectId(req.auth.sub),
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "User account no longer exists",
+      });
+
+      return;
+    }
+
+    if (!user.isActive) {
+      res.status(403).json({
+        success: false,
+        message: "Account is disabled",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id?.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Get current user error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve current user",
     });
   }
 }
