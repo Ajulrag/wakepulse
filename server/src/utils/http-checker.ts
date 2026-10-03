@@ -1,4 +1,5 @@
 import type { HttpMethod } from "../types/database.js";
+import { buildSafeTargetUrl } from "./url-security.js";
 
 export interface HttpCheckResult {
   status: "success" | "failed" | "timeout" | "error";
@@ -8,7 +9,8 @@ export interface HttpCheckResult {
 }
 
 interface HttpCheckInput {
-  url: string;
+  baseUrl: string;
+  endpoint: string;
   method: HttpMethod;
   timeoutSeconds: number;
 }
@@ -16,16 +18,37 @@ interface HttpCheckInput {
 export async function checkHttpEndpoint(
   input: HttpCheckInput,
 ): Promise<HttpCheckResult> {
+  const startedAt = performance.now();
+
+  let targetUrl: string;
+
+  try {
+    targetUrl = await buildSafeTargetUrl(
+      input.baseUrl,
+      input.endpoint,
+    );
+  } catch (error) {
+    return {
+      status: "error",
+      statusCode: null,
+      responseTime: Math.round(
+        performance.now() - startedAt,
+      ),
+      error:
+        error instanceof Error
+          ? error.message
+          : "URL validation failed",
+    };
+  }
+
   const controller = new AbortController();
 
   const timeout = setTimeout(() => {
     controller.abort();
   }, input.timeoutSeconds * 1000);
 
-  const startedAt = performance.now();
-
   try {
-    const response = await fetch(input.url, {
+    const response = await fetch(targetUrl, {
       method: input.method,
       signal: controller.signal,
       redirect: "manual",
