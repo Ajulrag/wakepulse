@@ -9,6 +9,7 @@ import type {
   DashboardSummary,
   DashboardUpcomingItem,
 } from '../types/dashboard'
+import { ApiRequestError, requestJson } from './request'
 
 const DASHBOARD_OVERVIEW_PATH = '/api/dashboard/overview'
 
@@ -124,7 +125,11 @@ function isDashboardOverviewResponse(
   )
 }
 
-function getRequestErrorMessage(status: number): string {
+function getRequestErrorMessage(status: number | null): string {
+  if (status === null) {
+    return 'Unable to connect to the WakePulse API.'
+  }
+
   if (status === 401) {
     return 'Your session has expired. Sign in again, then retry loading the dashboard.'
   }
@@ -139,15 +144,11 @@ function getRequestErrorMessage(status: number): string {
 export async function getDashboardOverview(
   signal?: AbortSignal,
 ): Promise<DashboardOverview> {
-  let response: Response
+  let payload: unknown
 
   try {
-    response = await fetch(DASHBOARD_OVERVIEW_PATH, {
+    payload = await requestJson(DASHBOARD_OVERVIEW_PATH, {
       method: 'GET',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
       signal,
     })
   } catch (cause) {
@@ -155,28 +156,10 @@ export async function getDashboardOverview(
       throw cause
     }
 
+    const status = cause instanceof ApiRequestError ? cause.status : null
     throw new DashboardApiError(
-      'Unable to connect to the WakePulse API.',
-      null,
-      { cause },
-    )
-  }
-
-  if (!response.ok) {
-    throw new DashboardApiError(
-      getRequestErrorMessage(response.status),
-      response.status,
-    )
-  }
-
-  let payload: unknown
-
-  try {
-    payload = await response.json()
-  } catch (cause) {
-    throw new DashboardApiError(
-      'The WakePulse API returned an invalid JSON response.',
-      response.status,
+      getRequestErrorMessage(status),
+      status,
       { cause },
     )
   }
@@ -184,7 +167,7 @@ export async function getDashboardOverview(
   if (!isDashboardOverviewResponse(payload)) {
     throw new DashboardApiError(
       'The WakePulse API returned an unexpected dashboard response.',
-      response.status,
+      null,
     )
   }
 

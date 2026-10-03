@@ -88,7 +88,11 @@ export function DashboardMonitoringStatistics({
       value: averageResponseTimeValue,
       description:
         stats.averageResponseTime24h === null
-          ? 'No response times recorded in the last 24 hours'
+          ? stats.checks24h === null
+            ? 'Response-time data unavailable'
+            : stats.checks24h === 0
+              ? 'No checks recorded in the last 24 hours'
+              : 'No response times recorded in the last 24 hours'
           : 'Across checks in the last 24 hours',
       tone: 'response',
     },
