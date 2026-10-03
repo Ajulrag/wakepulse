@@ -5,7 +5,7 @@ type MetricTone = 'accent' | 'online' | 'offline' | 'disabled' | 'checks'
 interface SummaryMetric {
   id: string
   label: string
-  value: number
+  value: number | null
   description: string
   tone: MetricTone
 }
@@ -21,7 +21,9 @@ function MetricCard({ metric }: { metric: SummaryMetric }) {
         <h3 className="summary-card-label">{metric.label}</h3>
         <span className="summary-card-indicator" aria-hidden="true" />
       </div>
-      <p className="summary-card-value">{metric.value.toLocaleString()}</p>
+      <p className="summary-card-value">
+        {metric.value === null ? '—' : metric.value.toLocaleString()}
+      </p>
       <p className="summary-card-description">{metric.description}</p>
     </article>
   )

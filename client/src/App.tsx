@@ -8,28 +8,21 @@ import {
   DashboardMonitoringStatistics,
   DashboardMonitoringStatisticsSkeleton,
 } from './components/DashboardMonitoringStatistics'
+import {
+  DashboardRecentActivity,
+  DashboardRecentActivitySkeleton,
+} from './components/DashboardRecentActivity'
+import {
+  DashboardUpcomingChecks,
+  DashboardUpcomingChecksSkeleton,
+} from './components/DashboardUpcomingChecks'
 import type { DashboardOverview } from './types/dashboard'
 import './App.css'
 
 type DashboardRequestState =
   | { status: 'loading' }
   | { status: 'success'; dashboard: DashboardOverview }
-  | { status: 'error'; message: string }
-
-const dashboardSections = [
-  {
-    id: 'recent-activity',
-    title: 'Recent activity',
-    description: 'The latest checks across your services.',
-    className: 'dashboard-panel dashboard-panel--activity',
-  },
-  {
-    id: 'upcoming-checks',
-    title: 'Upcoming checks',
-    description: 'See what the monitoring scheduler will check next.',
-    className: 'dashboard-panel dashboard-panel--upcoming',
-  },
-]
+  | { status: 'error'; message: string; authenticationRequired: boolean }
 
 function App() {
   const [requestState, setRequestState] = useState<DashboardRequestState>({
@@ -55,6 +48,8 @@ function App() {
             error instanceof DashboardApiError
               ? error.message
               : 'Unable to load the dashboard. Please try again.',
+          authenticationRequired:
+            error instanceof DashboardApiError && error.status === 401,
         })
       })
 
@@ -137,7 +132,10 @@ function App() {
           </div>
         </header>
 
-        <div className="page-content">
+        <div
+          className="page-content"
+          aria-busy={requestState.status === 'loading'}
+        >
           <section className="page-heading" aria-labelledby="page-title">
             <div>
               <p className="eyebrow">OVERVIEW</p>
@@ -172,7 +170,11 @@ function App() {
                     !
                   </span>
                   <div>
-                    <h3>Dashboard unavailable</h3>
+                    <h3>
+                      {requestState.authenticationRequired
+                        ? 'Sign in required'
+                        : 'Dashboard unavailable'}
+                    </h3>
                     <p>{requestState.message}</p>
                   </div>
                 </div>
@@ -181,7 +183,9 @@ function App() {
                   type="button"
                   onClick={retryDashboard}
                 >
-                  Try again
+                  {requestState.authenticationRequired
+                    ? 'Retry after signing in'
+                    : 'Try again'}
                 </button>
               </div>
             )}
@@ -207,32 +211,21 @@ function App() {
             <DashboardMonitoringStatistics stats={requestState.dashboard.stats} />
           )}
 
-          <div className="dashboard-grid">
-            {dashboardSections.map((section) => (
-              <section
-                className={section.className}
-                id={section.id}
-                key={section.id}
-                aria-labelledby={`${section.id}-title`}
-              >
-                <div className="panel-heading">
-                  <div>
-                    <h2 id={`${section.id}-title`}>{section.title}</h2>
-                    <p>{section.description}</p>
-                  </div>
-                  <span className="panel-menu" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </span>
-                </div>
-                <div className="panel-content" aria-hidden="true">
-                  <span className="panel-placeholder-line panel-placeholder-line--long" />
-                  <span className="panel-placeholder-line panel-placeholder-line--short" />
-                </div>
-              </section>
-            ))}
-          </div>
+          {requestState.status === 'loading' && (
+            <DashboardRecentActivitySkeleton />
+          )}
+
+          {requestState.status === 'success' && (
+            <DashboardRecentActivity activity={requestState.dashboard.activity} />
+          )}
+
+          {requestState.status === 'loading' && (
+            <DashboardUpcomingChecksSkeleton />
+          )}
+
+          {requestState.status === 'success' && (
+            <DashboardUpcomingChecks upcoming={requestState.dashboard.upcoming} />
+          )}
         </div>
       </main>
     </div>

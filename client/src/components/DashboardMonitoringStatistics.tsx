@@ -30,9 +30,11 @@ function StatisticCard({ statistic }: { statistic: MonitoringStatistic }) {
 export function DashboardMonitoringStatistics({
   stats,
 }: DashboardMonitoringStatisticsProps) {
-  const hasChecks = stats.checks24h > 0
+  const hasChecks = stats.checks24h !== null && stats.checks24h > 0
   const uptimeValue = hasChecks
-    ? `${stats.uptime24h.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
+    ? stats.uptime24h === null
+      ? '—'
+      : `${stats.uptime24h.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
     : '—'
   const averageResponseTimeValue =
     stats.averageResponseTime24h === null
@@ -43,31 +45,41 @@ export function DashboardMonitoringStatistics({
     {
       id: 'checks',
       label: 'Checks in 24 hours',
-      value: stats.checks24h.toLocaleString(),
-      description: 'Checks recorded in the last 24 hours',
+      value: stats.checks24h?.toLocaleString() ?? '—',
+      description: stats.checks24h === null
+        ? 'Check count unavailable'
+        : 'Checks recorded in the last 24 hours',
       tone: 'checks',
     },
     {
       id: 'successful',
       label: 'Successful checks',
-      value: stats.successfulChecks24h.toLocaleString(),
-      description: 'Checks that received a successful response',
+      value: stats.successfulChecks24h?.toLocaleString() ?? '—',
+      description: stats.successfulChecks24h === null
+        ? 'Successful check count unavailable'
+        : 'Checks that received a successful response',
       tone: 'successful',
     },
     {
       id: 'failed',
       label: 'Failed checks',
-      value: stats.failedChecks24h.toLocaleString(),
-      description: 'Checks that did not receive a successful response',
+      value: stats.failedChecks24h?.toLocaleString() ?? '—',
+      description: stats.failedChecks24h === null
+        ? 'Failed check count unavailable'
+        : 'Checks that did not receive a successful response',
       tone: 'failed',
     },
     {
       id: 'uptime',
       label: 'Uptime',
       value: uptimeValue,
-      description: hasChecks
-        ? 'Based on checks in the last 24 hours'
-        : 'No checks recorded in the last 24 hours',
+      description: stats.checks24h === 0
+        ? 'No checks recorded in the last 24 hours'
+        : stats.checks24h === null
+          ? 'Check count unavailable'
+          : stats.uptime24h === null
+            ? 'Uptime unavailable for the last 24 hours'
+            : 'Based on checks in the last 24 hours',
       tone: 'uptime',
     },
     {

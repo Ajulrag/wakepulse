@@ -19,19 +19,19 @@ export type DashboardServiceStatus =
   | 'disabled'
 
 export interface DashboardSummary {
-  totalServices: number
-  onlineServices: number
-  offlineServices: number
-  disabledServices: number
-  unknownServices: number
-  totalChecks: number
+  totalServices: number | null
+  onlineServices: number | null
+  offlineServices: number | null
+  disabledServices: number | null
+  unknownServices: number | null
+  totalChecks: number | null
 }
 
 export interface DashboardStats {
-  checks24h: number
-  successfulChecks24h: number
-  failedChecks24h: number
-  uptime24h: number
+  checks24h: number | null
+  successfulChecks24h: number | null
+  failedChecks24h: number | null
+  uptime24h: number | null
   averageResponseTime24h: number | null
 }
 

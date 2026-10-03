@@ -59,22 +59,22 @@ const serviceStatuses = ['unknown', 'online', 'offline', 'disabled'] as const
 function isDashboardSummary(value: unknown): value is DashboardSummary {
   return (
     isRecord(value) &&
-    isNumber(value.totalServices) &&
-    isNumber(value.onlineServices) &&
-    isNumber(value.offlineServices) &&
-    isNumber(value.disabledServices) &&
-    isNumber(value.unknownServices) &&
-    isNumber(value.totalChecks)
+    isNullableNumber(value.totalServices) &&
+    isNullableNumber(value.onlineServices) &&
+    isNullableNumber(value.offlineServices) &&
+    isNullableNumber(value.disabledServices) &&
+    isNullableNumber(value.unknownServices) &&
+    isNullableNumber(value.totalChecks)
   )
 }
 
 function isDashboardStats(value: unknown): value is DashboardStats {
   return (
     isRecord(value) &&
-    isNumber(value.checks24h) &&
-    isNumber(value.successfulChecks24h) &&
-    isNumber(value.failedChecks24h) &&
-    isNumber(value.uptime24h) &&
+    isNullableNumber(value.checks24h) &&
+    isNullableNumber(value.successfulChecks24h) &&
+    isNullableNumber(value.failedChecks24h) &&
+    isNullableNumber(value.uptime24h) &&
     isNullableNumber(value.averageResponseTime24h)
   )
 }
@@ -124,18 +124,16 @@ function isDashboardOverviewResponse(
   )
 }
 
-async function readErrorMessage(response: Response): Promise<string> {
-  try {
-    const payload: unknown = await response.json()
-
-    if (isRecord(payload) && typeof payload.message === 'string') {
-      return payload.message
-    }
-  } catch {
-    // Fall back to the HTTP status when an error response has no JSON body.
+function getRequestErrorMessage(status: number): string {
+  if (status === 401) {
+    return 'Your session has expired. Sign in again, then retry loading the dashboard.'
   }
 
-  return `Dashboard request failed with status ${response.status}.`
+  if (status === 403) {
+    return 'You do not have permission to view this dashboard.'
+  }
+
+  return 'The dashboard could not be loaded. Please try again.'
 }
 
 export async function getDashboardOverview(
@@ -166,7 +164,7 @@ export async function getDashboardOverview(
 
   if (!response.ok) {
     throw new DashboardApiError(
-      await readErrorMessage(response),
+      getRequestErrorMessage(response.status),
       response.status,
     )
   }
