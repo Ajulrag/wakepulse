@@ -289,3 +289,146 @@ export async function pingService(
     },
   };
 }
+
+export async function getServiceCheckHistory(
+  userId: string,
+  serviceId: string,
+  limit = 50,
+) {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return null;
+  }
+
+  const service = await servicesCollection().findOne({
+    _id: new ObjectId(serviceId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!service) {
+    return null;
+  }
+
+  const checks = await checkLogsCollection()
+    .find({
+      serviceId: new ObjectId(serviceId),
+      userId: new ObjectId(userId),
+    })
+    .sort({
+      checkedAt: -1,
+    })
+    .limit(limit)
+    .toArray();
+
+  return checks.map((check) => ({
+    id: check._id!.toString(),
+    status: check.status,
+    statusCode: check.statusCode,
+    responseTime: check.responseTime,
+    error: check.error,
+    checkedAt: check.checkedAt,
+    createdAt: check.createdAt,
+  }));
+}
+
+export async function getServiceSummary(
+  userId: string,
+  serviceId: string,
+) {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return null;
+  }
+
+  const service = await servicesCollection().findOne({
+    _id: new ObjectId(serviceId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!service) {
+    return null;
+  }
+
+  const checks = await checkLogsCollection()
+    .find({
+      serviceId: new ObjectId(serviceId),
+      userId: new ObjectId(userId),
+    })
+    .sort({
+      checkedAt: -1,
+    })
+    .toArray();
+
+  const totalChecks = checks.length;
+
+  const successfulChecks = checks.filter(
+    (check) => check.status === "success",
+  ).length;
+
+  const failedChecks =
+    totalChecks - successfulChecks;
+
+  const responseTimes = checks
+    .map((check) => check.responseTime)
+    .filter(
+      (value): value is number =>
+        value !== null,
+    );
+
+  const averageResponseTime =
+    responseTimes.length > 0
+      ? Math.round(
+          responseTimes.reduce(
+            (total, value) => total + value,
+            0,
+          ) / responseTimes.length,
+        )
+      : null;
+
+  const uptimePercentage =
+    totalChecks > 0
+      ? Number(
+          (
+            (successfulChecks / totalChecks) *
+            100
+          ).toFixed(2),
+        )
+      : null;
+
+  const latestCheck = checks[0] ?? null;
+
+  return {
+    service: {
+      id: service._id!.toString(),
+      name: service.name,
+      status: service.status,
+      enabled: service.enabled,
+      lastCheckedAt: service.lastCheckedAt,
+      lastSuccessAt: service.lastSuccessAt,
+      lastStatusCode: service.lastStatusCode,
+      lastResponseTime: service.lastResponseTime,
+      nextCheckAt: service.nextCheckAt,
+    },
+    metrics: {
+      totalChecks,
+      successfulChecks,
+      failedChecks,
+      uptimePercentage,
+      averageResponseTime,
+    },
+    latestCheck: latestCheck
+      ? {
+          id: latestCheck._id!.toString(),
+          status: latestCheck.status,
+          statusCode: latestCheck.statusCode,
+          responseTime: latestCheck.responseTime,
+          error: latestCheck.error,
+          checkedAt: latestCheck.checkedAt,
+        }
+      : null,
+  };
+}

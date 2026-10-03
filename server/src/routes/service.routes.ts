@@ -4,6 +4,7 @@ import {
   createServiceController,
   deleteServiceController,
   getServiceByIdController,
+  getServiceCheckHistoryController,
   getUserServicesController,
   pingServiceController,
   updateServiceController,
@@ -28,6 +29,12 @@ router.post(
   "/:id/ping",
   requireAuth,
   pingServiceController,
+);
+
+router.get(
+  "/:id/checks",
+  requireAuth,
+  getServiceCheckHistoryController,
 );
 
 router.get(

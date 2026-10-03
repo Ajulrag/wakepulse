@@ -4,6 +4,7 @@ import {
   createService,
   deleteService,
   getServiceById,
+  getServiceCheckHistory,
   getUserServices,
   pingService,
   updateService,
@@ -330,6 +331,89 @@ export async function pingServiceController(
     res.status(500).json({
       success: false,
       message: "Unable to ping service",
+    });
+  }
+}
+
+export async function getServiceCheckHistoryController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!req.auth) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+
+      return;
+    }
+
+    const rawLimit = req.query.limit;
+
+    let limit = 50;
+
+    if (rawLimit !== undefined) {
+      const value =
+        typeof rawLimit === "string"
+          ? Number(rawLimit)
+          : NaN;
+
+      if (
+        !Number.isInteger(value) ||
+        value < 1 ||
+        value > 100
+      ) {
+        res.status(400).json({
+          success: false,
+          message: "Limit must be an integer between 1 and 100",
+        });
+
+        return;
+      }
+
+      limit = value;
+    }
+
+    const checks = await getServiceCheckHistory(
+      req.auth.sub,
+      id,
+      limit,
+    );
+
+    if (!checks) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      checks,
+    });
+  } catch (error) {
+    console.error(
+      "Get service check history error:",
+      error,
+    );
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve check history",
     });
   }
 }
