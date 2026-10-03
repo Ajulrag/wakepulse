@@ -4,6 +4,7 @@ import {
   createServiceController,
   getServiceByIdController,
   getUserServicesController,
+  updateServiceController,
 } from "../controllers/service.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -26,5 +27,12 @@ router.get(
   requireAuth,
   getServiceByIdController,
 );
+
+router.patch(
+  "/:id",
+  requireAuth,
+  updateServiceController,
+);
+
 
 export default router;

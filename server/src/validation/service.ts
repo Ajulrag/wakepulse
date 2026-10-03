@@ -58,3 +58,60 @@ export const createServiceSchema = z.object({
 export type CreateServiceInput = z.infer<
   typeof createServiceSchema
 >;
+
+export const updateServiceSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Service name must be at least 2 characters")
+      .max(100, "Service name must be at most 100 characters")
+      .optional(),
+
+    provider: serviceProviderSchema.optional(),
+
+    url: z
+      .string()
+      .trim()
+      .url("Please provide a valid URL")
+      .optional(),
+
+    endpoint: z
+      .string()
+      .trim()
+      .min(1, "Endpoint is required")
+      .max(500, "Endpoint is too long")
+      .optional(),
+
+    method: httpMethodSchema.optional(),
+
+    intervalSeconds: z
+      .number()
+      .int("Interval must be a whole number")
+      .min(30, "Interval must be at least 30 seconds")
+      .max(
+        24 * 60 * 60,
+        "Interval cannot exceed 24 hours",
+      )
+      .optional(),
+
+    timeoutSeconds: z
+      .number()
+      .int("Timeout must be a whole number")
+      .min(5, "Timeout must be at least 5 seconds")
+      .max(60, "Timeout cannot exceed 60 seconds")
+      .optional(),
+
+    enabled: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    {
+      message: "At least one field must be provided",
+    },
+  );
+
+export type UpdateServiceInput = z.infer<
+  typeof updateServiceSchema
+>;

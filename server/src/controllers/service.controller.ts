@@ -4,8 +4,12 @@ import {
   createService,
   getServiceById,
   getUserServices,
+  updateService,
 } from "../services/service.service.js";
-import { createServiceSchema } from "../validation/service.js";
+import {
+  createServiceSchema,
+  updateServiceSchema,
+} from "../validation/service.js";
 
 export async function createServiceController(
   req: Request,
@@ -135,6 +139,75 @@ export async function getServiceByIdController(
     res.status(500).json({
       success: false,
       message: "Unable to retrieve service",
+    });
+  }
+}
+
+export async function updateServiceController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!req.auth) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+
+      return;
+    }
+
+    const validationResult =
+      updateServiceSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid service update data",
+        errors:
+          validationResult.error.flatten().fieldErrors,
+      });
+
+      return;
+    }
+
+    const service = await updateService(
+      req.auth.sub,
+      id,
+      validationResult.data,
+    );
+
+    if (!service) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Service updated successfully",
+      service,
+    });
+  } catch (error) {
+    console.error("Update service error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to update service",
     });
   }
 }

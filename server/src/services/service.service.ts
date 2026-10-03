@@ -2,7 +2,10 @@ import { ObjectId } from "mongodb";
 
 import { servicesCollection } from "../config/collections.js";
 import type { ServiceDocument } from "../types/database.js";
-import type { CreateServiceInput } from "../validation/service.js";
+import type {
+  CreateServiceInput,
+  UpdateServiceInput,
+} from "../validation/service.js";
 
 export interface SafeService {
   id: string;
@@ -119,4 +122,41 @@ export async function getServiceById(
   }
 
   return toSafeService(service);
+}
+
+export async function updateService(
+  userId: string,
+  serviceId: string,
+  input: UpdateServiceInput,
+): Promise<SafeService | null> {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return null;
+  }
+
+  const now = new Date();
+
+  const result = await servicesCollection().findOneAndUpdate(
+    {
+      _id: new ObjectId(serviceId),
+      userId: new ObjectId(userId),
+    },
+    {
+      $set: {
+        ...input,
+        updatedAt: now,
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
+
+  if (!result) {
+    return null;
+  }
+
+  return toSafeService(result);
 }
