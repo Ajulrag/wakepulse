@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   createServiceController,
+  deleteServiceController,
   getServiceByIdController,
   getUserServicesController,
   updateServiceController,
@@ -34,5 +35,10 @@ router.patch(
   updateServiceController,
 );
 
+router.delete(
+  "/:id",
+  requireAuth,
+  deleteServiceController,
+);
 
 export default router;

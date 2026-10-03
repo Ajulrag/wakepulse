@@ -160,3 +160,22 @@ export async function updateService(
 
   return toSafeService(result);
 }
+
+export async function deleteService(
+  userId: string,
+  serviceId: string,
+): Promise<boolean> {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return false;
+  }
+
+  const result = await servicesCollection().deleteOne({
+    _id: new ObjectId(serviceId),
+    userId: new ObjectId(userId),
+  });
+
+  return result.deletedCount === 1;
+}

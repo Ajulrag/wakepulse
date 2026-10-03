@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import {
   createService,
+  deleteService,
   getServiceById,
   getUserServices,
   updateService,
@@ -208,6 +209,59 @@ export async function updateServiceController(
     res.status(500).json({
       success: false,
       message: "Unable to update service",
+    });
+  }
+}
+
+export async function deleteServiceController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!req.auth) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+
+      return;
+    }
+
+    const deleted = await deleteService(
+      req.auth.sub,
+      id,
+    );
+
+    if (!deleted) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Service deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete service error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to delete service",
     });
   }
 }
