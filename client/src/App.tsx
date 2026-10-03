@@ -1,18 +1,22 @@
+import { useEffect, useState } from 'react'
+import { DashboardApiError, getDashboardOverview } from './api/dashboard'
+import {
+  DashboardSummaryCards,
+  DashboardSummaryCardsSkeleton,
+} from './components/DashboardSummaryCards'
+import {
+  DashboardMonitoringStatistics,
+  DashboardMonitoringStatisticsSkeleton,
+} from './components/DashboardMonitoringStatistics'
+import type { DashboardOverview } from './types/dashboard'
 import './App.css'
 
+type DashboardRequestState =
+  | { status: 'loading' }
+  | { status: 'success'; dashboard: DashboardOverview }
+  | { status: 'error'; message: string }
+
 const dashboardSections = [
-  {
-    id: 'service-summary',
-    title: 'Service summary',
-    description: 'A snapshot of the services you monitor.',
-    className: 'dashboard-panel dashboard-panel--summary',
-  },
-  {
-    id: 'monitoring-statistics',
-    title: 'Monitoring statistics',
-    description: 'Availability and response time over time.',
-    className: 'dashboard-panel dashboard-panel--statistics',
-  },
   {
     id: 'recent-activity',
     title: 'Recent activity',
@@ -28,6 +32,40 @@ const dashboardSections = [
 ]
 
 function App() {
+  const [requestState, setRequestState] = useState<DashboardRequestState>({
+    status: 'loading',
+  })
+  const [retryCount, setRetryCount] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    getDashboardOverview(controller.signal)
+      .then((dashboard) => {
+        setRequestState({ status: 'success', dashboard })
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+
+        setRequestState({
+          status: 'error',
+          message:
+            error instanceof DashboardApiError
+              ? error.message
+              : 'Unable to load the dashboard. Please try again.',
+        })
+      })
+
+    return () => controller.abort()
+  }, [retryCount])
+
+  const retryDashboard = () => {
+    setRequestState({ status: 'loading' })
+    setRetryCount((count) => count + 1)
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Main navigation">
@@ -114,6 +152,60 @@ function App() {
               <span className="decoration-core" />
             </div>
           </section>
+
+          <section className="summary-section" aria-labelledby="summary-title">
+            <div className="summary-section-heading">
+              <div>
+                <h2 id="summary-title">Service summary</h2>
+                <p>Availability and monitoring totals across your workspace.</p>
+              </div>
+            </div>
+
+            {requestState.status === 'loading' && (
+              <DashboardSummaryCardsSkeleton />
+            )}
+
+            {requestState.status === 'error' && (
+              <div className="dashboard-error" role="alert">
+                <div className="dashboard-error-copy">
+                  <span className="dashboard-error-mark" aria-hidden="true">
+                    !
+                  </span>
+                  <div>
+                    <h3>Dashboard unavailable</h3>
+                    <p>{requestState.message}</p>
+                  </div>
+                </div>
+                <button
+                  className="dashboard-retry-button"
+                  type="button"
+                  onClick={retryDashboard}
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {requestState.status === 'success' && (
+              <>
+                <DashboardSummaryCards summary={requestState.dashboard.summary} />
+                {requestState.dashboard.summary.totalServices === 0 && (
+                  <p className="zero-services-note" role="status">
+                    No services are configured yet. Add a service to start monitoring;
+                    your summary will update as checks are recorded.
+                  </p>
+                )}
+              </>
+            )}
+          </section>
+
+          {requestState.status === 'loading' && (
+            <DashboardMonitoringStatisticsSkeleton />
+          )}
+
+          {requestState.status === 'success' && (
+            <DashboardMonitoringStatistics stats={requestState.dashboard.stats} />
+          )}
 
           <div className="dashboard-grid">
             {dashboardSections.map((section) => (
