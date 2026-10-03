@@ -108,7 +108,7 @@ export async function getServiceByIdController(
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!id) {
       res.status(400).json({
@@ -161,7 +161,7 @@ export async function updateServiceController(
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!id) {
       res.status(400).json({
@@ -230,7 +230,7 @@ export async function deleteServiceController(
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!id) {
       res.status(400).json({
@@ -283,7 +283,7 @@ export async function pingServiceController(
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!id) {
       res.status(400).json({
@@ -350,7 +350,7 @@ export async function getServiceCheckHistoryController(
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!id) {
       res.status(400).json({
@@ -424,7 +424,7 @@ export async function getServiceSummaryController(
   res: Response,
 ) {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { window = "7d" } = req.query;
 
     if (
