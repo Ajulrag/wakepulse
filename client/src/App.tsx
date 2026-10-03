@@ -57,11 +57,31 @@ function App() {
             </svg>
             <span>Dashboard</span>
           </a>
+          <button className="nav-link nav-link--placeholder" type="button" disabled>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="3" y="4" width="14" height="12" rx="2" />
+              <path d="M3 8h14M7 4v4m6-4v4" />
+            </svg>
+            <span>Services</span>
+          </button>
+          <button className="nav-link nav-link--placeholder" type="button" disabled>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M2.5 10h3l2-5 4 10 2-5h4" />
+              <circle cx="10" cy="10" r="8" />
+            </svg>
+            <span>Monitoring / History</span>
+          </button>
+          <button className="nav-link nav-link--placeholder" type="button" disabled>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="3" />
+              <path d="m16.2 11.8 1.1.9-1.4 2.4-1.4-.5a6.7 6.7 0 0 1-1.5.9l-.3 1.5h-2.8l-.3-1.5a6.7 6.7 0 0 1-1.5-.9l-1.4.5-1.4-2.4 1.1-.9a6.4 6.4 0 0 1 0-1.8l-1.1-.9 1.4-2.4 1.4.5a6.7 6.7 0 0 1 1.5-.9l.3-1.5h2.8l.3 1.5a6.7 6.7 0 0 1 1.5.9l1.4-.5 1.4 2.4-1.1.9a6.4 6.4 0 0 1 0 1.8Z" />
+            </svg>
+            <span>Settings</span>
+          </button>
         </nav>
 
         <div className="sidebar-footer">
-          <span className="connection-dot" aria-hidden="true" />
-          <span>Monitoring workspace</span>
+          <span>WakePulse monitoring workspace</span>
         </div>
       </aside>
 
@@ -75,7 +95,6 @@ function App() {
             <span className="breadcrumb-current">Dashboard</span>
           </div>
           <div className="topbar-note">
-            <span className="status-pulse" aria-hidden="true" />
             Service monitoring
           </div>
         </header>
