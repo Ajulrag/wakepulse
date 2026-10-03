@@ -85,3 +85,18 @@ export async function createService(
 
   return toSafeService(service);
 }
+
+export async function getUserServices(
+  userId: string,
+): Promise<SafeService[]> {
+  const services = await servicesCollection()
+    .find({
+      userId: new ObjectId(userId),
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
+
+  return services.map(toSafeService);
+}
