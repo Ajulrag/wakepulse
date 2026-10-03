@@ -399,19 +399,24 @@ export async function getServiceSummary(
 
   const responseTimes = checks
     .map((check) => check.responseTime)
-    .filter(
-      (value): value is number =>
-        value !== null,
-    );
+    .filter((value): value is number => value !== null);
 
   const averageResponseTime =
     responseTimes.length > 0
       ? Math.round(
-        responseTimes.reduce(
-          (total, value) => total + value,
-          0,
-        ) / responseTimes.length,
+        responseTimes.reduce((sum, value) => sum + value, 0) /
+        responseTimes.length,
       )
+      : null;
+
+  const minimumResponseTime =
+    responseTimes.length > 0
+      ? Math.min(...responseTimes)
+      : null;
+
+  const maximumResponseTime =
+    responseTimes.length > 0
+      ? Math.max(...responseTimes)
       : null;
 
   const uptimePercentage =
@@ -445,6 +450,8 @@ export async function getServiceSummary(
       failedChecks,
       uptimePercentage,
       averageResponseTime,
+      minimumResponseTime,
+      maximumResponseTime,
     },
     latestCheck: latestCheck
       ? {
