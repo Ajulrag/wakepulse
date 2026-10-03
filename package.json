@@ -8,10 +8,10 @@
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "build": "npm run build:client && npm run build:server",
-    "build:client": "npm --prefix client run build",
-    "build:server": "npm --prefix server run build",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server",
     "typecheck": "npm run typecheck:client && npm run typecheck:server",
-    "typecheck:client": "npm --prefix client exec tsc -- --noEmit",
+    "typecheck:client": "npm --prefix client exec -- tsc -b",
     "typecheck:server": "npm --prefix server run typecheck"
   },
   "devDependencies": {
