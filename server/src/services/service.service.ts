@@ -100,3 +100,23 @@ export async function getUserServices(
 
   return services.map(toSafeService);
 }
+
+export async function getServiceById(
+  userId: string,
+  serviceId: string,
+): Promise<SafeService | null> {
+  if (!ObjectId.isValid(serviceId)) {
+    return null;
+  }
+
+  const service = await servicesCollection().findOne({
+    _id: new ObjectId(serviceId),
+    userId: new ObjectId(userId),
+  });
+
+  if (!service) {
+    return null;
+  }
+
+  return toSafeService(service);
+}

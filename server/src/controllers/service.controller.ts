@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import {
   createService,
+  getServiceById,
   getUserServices,
 } from "../services/service.service.js";
 import { createServiceSchema } from "../validation/service.js";
@@ -81,6 +82,59 @@ export async function getUserServicesController(
     res.status(500).json({
       success: false,
       message: "Unable to retrieve services",
+    });
+  }
+}
+
+export async function getServiceByIdController(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    if (!req.auth) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        message: "Service ID is required",
+      });
+
+      return;
+    }
+
+    const service = await getServiceById(
+      req.auth.sub,
+      id,
+    );
+
+    if (!service) {
+      res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      service,
+    });
+  } catch (error) {
+    console.error("Get service by ID error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve service",
     });
   }
 }
