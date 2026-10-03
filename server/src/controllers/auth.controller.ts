@@ -9,6 +9,8 @@ import { authenticateUser, registerUser } from "../services/auth.service.js";
 import { createSession } from "../services/session.service.js";
 import { loginSchema, registerSchema } from "../validation/auth.js";
 import { usersCollection } from "../config/collections.js";
+import { sessionsCollection } from "../config/collections.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 
 export async function register(
   req: Request,
@@ -216,6 +218,45 @@ export async function getCurrentUser(
     res.status(500).json({
       success: false,
       message: "Unable to retrieve current user",
+    });
+  }
+}
+
+export async function logout(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const token = req.cookies?.[AUTH_COOKIE_NAME];
+
+    if (token) {
+      try {
+        const payload = verifyAccessToken(token);
+
+        await sessionsCollection().deleteOne({
+          tokenId: payload.jti,
+        });
+      } catch {
+        // Even if the token is invalid or expired,
+        // we still clear the authentication cookie.
+      }
+    }
+
+    res.clearCookie(
+      AUTH_COOKIE_NAME,
+      authCookieOptions,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to logout",
     });
   }
 }
