@@ -41,5 +41,11 @@ export async function initializeDatabase(): Promise<void> {
     checkedAt: -1,
   });
 
+  await checkLogsCollection().createIndex({
+    serviceId: 1,
+    userId: 1,
+    checkedAt: -1,
+  });
+
   console.log("WakePulse database indexes initialized");
 }

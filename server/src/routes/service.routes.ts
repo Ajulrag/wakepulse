@@ -5,6 +5,7 @@ import {
   deleteServiceController,
   getServiceByIdController,
   getServiceCheckHistoryController,
+  getServiceSummaryController,
   getUserServicesController,
   pingServiceController,
   updateServiceController,
@@ -35,6 +36,12 @@ router.get(
   "/:id/checks",
   requireAuth,
   getServiceCheckHistoryController,
+);
+
+router.get(
+  "/:id/summary",
+  requireAuth,
+  getServiceSummaryController,
 );
 
 router.get(

@@ -5,6 +5,7 @@ import {
   deleteService,
   getServiceById,
   getServiceCheckHistory,
+  getServiceSummary,
   getUserServices,
   pingService,
   updateService,
@@ -414,6 +415,54 @@ export async function getServiceCheckHistoryController(
     res.status(500).json({
       success: false,
       message: "Unable to retrieve check history",
+    });
+  }
+}
+
+export async function getServiceSummaryController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { id } = req.params;
+    const { window = "7d" } = req.query;
+
+    if (
+      window !== "24h" &&
+      window !== "7d" &&
+      window !== "30d"
+    ) {
+      return res.status(400).json({
+        message: "Invalid monitoring window. Use 24h, 7d, or 30d.",
+      });
+    }
+
+    if (!req.auth) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const summary = await getServiceSummary(
+      req.auth.sub,
+      id,
+      window,
+    );
+
+    if (!summary) {
+      return res.status(404).json({
+        message: "Service not found",
+      });
+    }
+
+    return res.status(200).json({
+      summary,
+    });
+  } catch (error) {
+    console.error("Get service summary error:", error);
+
+    return res.status(500).json({
+      message: "Failed to get service summary",
     });
   }
 }
