@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calculateServiceMetrics } from "../../utils/service-metrics.js";
+import { runWithConcurrency } from "../../scheduler/concurrency.js";
 
 describe("service summary monitoring windows", () => {
   it("supports the 24h monitoring window", () => {
@@ -124,5 +125,38 @@ describe("service summary metrics", () => {
     expect(metrics.averageResponseTime).toBeNull();
     expect(metrics.minimumResponseTime).toBeNull();
     expect(metrics.maximumResponseTime).toBeNull();
+  });
+});
+
+describe("scheduler concurrency", () => {
+  it("does not exceed the configured concurrency", async () => {
+    const items = Array.from(
+      { length: 10 },
+      (_, index) => index,
+    );
+
+    let activeWorkers = 0;
+    let maximumActiveWorkers = 0;
+
+    await runWithConcurrency(
+      items,
+      3,
+      async () => {
+        activeWorkers += 1;
+
+        maximumActiveWorkers = Math.max(
+          maximumActiveWorkers,
+          activeWorkers,
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 20),
+        );
+
+        activeWorkers -= 1;
+      },
+    );
+
+    expect(maximumActiveWorkers).toBeLessThanOrEqual(3);
   });
 });

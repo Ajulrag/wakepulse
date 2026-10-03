@@ -428,3 +428,20 @@ export async function getServiceSummary(
       : null,
   };
 }
+
+export async function getDueServices(
+  now = new Date(),
+): Promise<ServiceDocument[]> {
+  return servicesCollection()
+    .find({
+      enabled: true,
+      nextCheckAt: {
+        $ne: null,
+        $lte: now,
+      },
+    })
+    .sort({
+      nextCheckAt: 1,
+    })
+    .toArray();
+}
