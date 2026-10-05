@@ -8,6 +8,7 @@ import {
 import { RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
+import { ServicesPage } from './pages/ServicesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -71,6 +72,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="services" element={<ServicesPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
