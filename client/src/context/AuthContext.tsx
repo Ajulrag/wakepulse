@@ -35,9 +35,16 @@ function isUnauthenticatedError(error: unknown): boolean {
   )
 }
 
-function getAuthFailureState(error: unknown): AuthState {
+function getAuthFailureState(
+  error: unknown,
+  previousState?: AuthState,
+): AuthState {
   if (isUnauthenticatedError(error)) {
     return { status: 'unauthenticated' }
+  }
+
+  if (previousState?.status === 'authenticated') {
+    return previousState
   }
 
   return {
@@ -49,34 +56,43 @@ function getAuthFailureState(error: unknown): AuthState {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [state, setState] = useState<AuthState>({ status: 'checking' })
   const currentRequest = useRef<AbortController | null>(null)
+  const logoutInProgress = useRef(false)
 
-  const verifyCurrentUser = useCallback(async (controller: AbortController) => {
-    try {
-      const user = await getCurrentUser(controller.signal)
+  const verifyCurrentUser = useCallback(
+    async (controller: AbortController, previousState?: AuthState) => {
+      try {
+        const user = await getCurrentUser(controller.signal)
 
-      if (!controller.signal.aborted) {
-        setState({ status: 'authenticated', user })
-      }
-    } catch (error: unknown) {
-      if (controller.signal.aborted) {
-        return
-      }
+        if (!controller.signal.aborted) {
+          setState({ status: 'authenticated', user })
+        }
+      } catch (error: unknown) {
+        if (controller.signal.aborted) {
+          return
+        }
 
-      setState(getAuthFailureState(error))
-    } finally {
-      if (currentRequest.current === controller) {
-        currentRequest.current = null
+        setState(getAuthFailureState(error, previousState))
+      } finally {
+        if (currentRequest.current === controller) {
+          currentRequest.current = null
+        }
       }
-    }
-  }, [])
+    },
+    [],
+  )
 
   const refreshUser = useCallback(async () => {
+    const previousState = state
     currentRequest.current?.abort()
     const controller = new AbortController()
     currentRequest.current = controller
-    setState({ status: 'checking' })
-    await verifyCurrentUser(controller)
-  }, [verifyCurrentUser])
+
+    if (previousState.status !== 'authenticated') {
+      setState({ status: 'checking' })
+    }
+
+    await verifyCurrentUser(controller, previousState)
+  }, [state, verifyCurrentUser])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -105,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         currentRequest.current = null
       }
     }
-  }, [verifyCurrentUser])
+  }, [])
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const user = await loginUser(credentials)
@@ -120,8 +136,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const logout = useCallback(async () => {
-    await logoutUser()
-    setState({ status: 'unauthenticated' })
+    if (logoutInProgress.current) {
+      return
+    }
+
+    logoutInProgress.current = true
+    currentRequest.current?.abort()
+    currentRequest.current = null
+    let serverConfirmed = false
+
+    try {
+      await logoutUser()
+      serverConfirmed = true
+    } catch {
+      serverConfirmed = false
+    } finally {
+      setState(
+        serverConfirmed
+          ? { status: 'unauthenticated' }
+          : { status: 'unauthenticated', logoutWarning: true },
+      )
+      logoutInProgress.current = false
+    }
   }, [])
 
   const value = useMemo(

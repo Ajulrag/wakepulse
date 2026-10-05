@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/useAuth'
 import { DashboardApiError, getDashboardOverview } from '../api/dashboard'
 import {
   DashboardSummaryCards,
@@ -25,10 +27,16 @@ type DashboardRequestState =
   | { status: 'error'; message: string; authenticationRequired: boolean }
 
 export function DashboardPage() {
+  const { state: authState, logout } = useAuth()
+  const navigate = useNavigate()
   const [requestState, setRequestState] = useState<DashboardRequestState>({
     status: 'loading',
   })
   const [retryCount, setRetryCount] = useState(0)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const logoutSubmissionLock = useRef(false)
+  const accountName =
+    authState.status === 'authenticated' ? authState.user.name : ''
 
   useEffect(() => {
     const controller = new AbortController()
@@ -59,6 +67,25 @@ export function DashboardPage() {
   const retryDashboard = () => {
     setRequestState({ status: 'loading' })
     setRetryCount((count) => count + 1)
+  }
+
+  const handleLogout = async () => {
+    if (logoutSubmissionLock.current) {
+      return
+    }
+
+    logoutSubmissionLock.current = true
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+    } catch {
+      // AuthContext clears the local auth state even when the request fails.
+    } finally {
+      logoutSubmissionLock.current = false
+      setIsLoggingOut(false)
+      navigate('/login', { replace: true })
+    }
   }
 
   return (
@@ -127,7 +154,18 @@ export function DashboardPage() {
             </svg>
             <span className="breadcrumb-current">Dashboard</span>
           </div>
-          <div className="topbar-note">Service monitoring</div>
+          <div className="topbar-actions">
+            {accountName && <span className="topbar-user">{accountName}</span>}
+            <button
+              className="logout-button"
+              type="button"
+              onClick={() => void handleLogout()}
+              disabled={isLoggingOut}
+              aria-busy={isLoggingOut}
+            >
+              {isLoggingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
         </header>
 
         <div className="page-content" aria-busy={requestState.status === 'loading'}>

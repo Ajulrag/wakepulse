@@ -1,5 +1,4 @@
 import {
-  Link,
   Navigate,
   Outlet,
   Route,
@@ -10,39 +9,8 @@ import { RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
 import { DashboardPage } from './pages/DashboardPage'
-
-interface AuthPlaceholderProps {
-  mode: 'login' | 'register'
-}
-
-function AuthPlaceholder({ mode }: AuthPlaceholderProps) {
-  const isLogin = mode === 'login'
-
-  return (
-    <main className="auth-placeholder-page">
-      <section className="auth-placeholder-card" aria-labelledby="auth-placeholder-title">
-        <p className="auth-placeholder-brand">WakePulse</p>
-        <h1 id="auth-placeholder-title">
-          {isLogin ? 'Sign in' : 'Create your account'}
-        </h1>
-        <p>
-          {isLogin
-            ? 'The sign-in form will be added in a later development step.'
-            : 'The registration form will be added in a later development step.'}
-        </p>
-        <Link className="auth-placeholder-link" to={isLogin ? '/register' : '/login'}>
-          {isLogin ? 'Go to registration' : 'Go to sign in'}
-        </Link>
-        <p className="auth-placeholder-switch">
-          {isLogin ? 'Need an account? ' : 'Already have an account? '}
-          <Link to={isLogin ? '/register' : '/login'}>
-            {isLogin ? 'Register' : 'Sign in'}
-          </Link>
-        </p>
-      </section>
-    </main>
-  )
-}
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
@@ -79,6 +47,7 @@ function PublicOnly() {
   if (state.status === 'authenticated') {
     const redirectPath = (location.state as { from?: unknown } | null)?.from
     const destination =
+      location.pathname !== '/register' &&
       typeof redirectPath === 'string' &&
       redirectPath.startsWith('/') &&
       !redirectPath.startsWith('//')
@@ -95,8 +64,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<PublicOnly />}>
-        <Route path="/login" element={<AuthPlaceholder mode="login" />} />
-        <Route path="/register" element={<AuthPlaceholder mode="register" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Route>
 
       <Route element={<RequireAuth />}>

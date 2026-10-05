@@ -8,7 +8,7 @@ import type {
 export type AuthState =
   | { status: 'checking' }
   | { status: 'authenticated'; user: AuthUser }
-  | { status: 'unauthenticated' }
+  | { status: 'unauthenticated'; logoutWarning?: boolean }
   | { status: 'error'; message: string }
 
 export interface AuthContextValue {
