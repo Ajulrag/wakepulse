@@ -1,4 +1,8 @@
-import type { MonitoredService, ServiceDetailsResponse } from '../types/service'
+import type {
+  MonitoredService,
+  ServiceDetailsResponse,
+  ServiceSummaryResponse,
+} from '../types/service'
 import { isMonitoredService } from './services'
 import { ApiRequestError, requestJson } from './request'
 
@@ -31,4 +35,24 @@ export async function getServiceDetails(
   }
 
   return payload.service
+}
+
+export async function getServiceSummary(
+  serviceId: string,
+  window: '24h' | '7d' | '30d' = '7d',
+  signal?: AbortSignal,
+): Promise<ServiceSummaryResponse['summary']> {
+  const payload = await requestJson(
+    `/api/services/${encodeURIComponent(serviceId)}/summary?window=${encodeURIComponent(window)}`,
+    { method: 'GET', signal },
+  )
+
+  if (!isRecord(payload) || payload.success !== true || !isRecord(payload.summary)) {
+    throw new ApiRequestError(
+      'The WakePulse API returned an unexpected summary response.',
+      null,
+    )
+  }
+
+  return payload.summary as ServiceSummaryResponse['summary']
 }

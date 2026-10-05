@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getServiceDetails } from '../api/service-details'
+import { getServiceDetails, getServiceSummary } from '../api/service-details'
 import { ApiRequestError } from '../api/request'
 import { AppLayout } from '../components/AppLayout'
 import { useAuth } from '../context/useAuth'
-import type { MonitoredService, ServiceStatus } from '../types/service'
+import type { MonitoredService, ServiceStatus, ServiceSummaryResponse } from '../types/service'
 
 type ServiceDetailsState =
   | { status: 'loading' }
@@ -181,6 +181,39 @@ export function ServiceDetailsPage() {
     await refreshUserRef.current()
     retry()
   }
+
+  // 2M.3 — Monitoring statistics
+  type StatsWindow = '24h' | '7d' | '30d'
+  const [statsWindow, setStatsWindow] = useState<StatsWindow>('7d')
+  const [statsState, setStatsState] = useState<
+    | { status: 'idle' }
+    | { status: 'loading' }
+    | { status: 'success'; data: ServiceSummaryResponse['summary'] }
+    | { status: 'error'; message: string }
+  >({ status: 'idle' })
+
+  useEffect(() => {
+    if (!serviceId || currentState.status !== 'success') {
+      return
+    }
+    const controller = new AbortController()
+    setStatsState({ status: 'loading' })
+    getServiceSummary(serviceId, statsWindow, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setStatsState({ status: 'success', data })
+        }
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return
+        const msg = error instanceof ApiRequestError ? error.message : 'Unable to load statistics.'
+        setStatsState({ status: 'error', message: msg })
+      })
+    return () => controller.abort()
+  }, [serviceId, statsWindow, currentState.status])
+
+  const statsData = statsState.status === 'success' ? statsState.data : null
+  const metrics = statsData?.metrics
 
   return (
     <AppLayout activePage="services">
@@ -434,6 +467,106 @@ export function ServiceDetailsPage() {
                     ? `Latest check reported an error: ${service.lastError}`
                     : 'No error details were reported by the latest check.'}
               </p>
+            </div>
+          )}
+        </section>
+
+        {/* 2M.3 — Monitoring statistics */}
+        <section
+          className="service-details-section"
+          aria-labelledby="service-statistics-title"
+        >
+          <div className="summary-section-heading">
+            <div>
+              <h2 id="service-statistics-title">Monitoring statistics</h2>
+              <p>Performance over the selected monitoring window.</p>
+            </div>
+            <div className="service-stats-window-selector" aria-label="Select monitoring window">
+              <label htmlFor="stats-window" className="visually-hidden">Monitoring window</label>
+              <select
+                id="stats-window"
+                value={statsWindow}
+                onChange={(e) => setStatsWindow(e.target.value as StatsWindow)}
+                aria-label="Monitoring window"
+              >
+                <option value="24h">24 hours</option>
+                <option value="7d">7 days</option>
+                <option value="30d">30 days</option>
+              </select>
+            </div>
+          </div>
+
+          {statsState.status === 'loading' && (
+            <div className="dashboard-panel" role="status" aria-live="polite">
+              <div className="service-stats-loading">
+                <span className="visually-hidden">Loading statistics…</span>
+                <span className="skeleton-bar skeleton-bar--label" aria-hidden="true" />
+                <span className="skeleton-bar skeleton-bar--value" aria-hidden="true" />
+                <span className="skeleton-bar skeleton-bar--description" aria-hidden="true" />
+              </div>
+            </div>
+          )}
+
+          {statsState.status === 'error' && (
+            <div className="dashboard-error" role="alert">
+              <div className="dashboard-error-copy">
+                <span className="dashboard-error-mark" aria-hidden="true">!</span>
+                <div>
+                  <h3>Statistics unavailable</h3>
+                  <p>{statsState.message}</p>
+                </div>
+              </div>
+              <button
+                className="dashboard-retry-button"
+                type="button"
+                onClick={() => setStatsWindow((w) => w)}
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {statsState.status === 'success' && metrics && (
+            <div className="service-stats-grid" aria-label="Monitoring statistics">
+              <article className="service-stats-card" aria-label="Total checks">
+                <h3>Total checks</h3>
+                <p className="service-stats-value">{metrics.totalChecks.toLocaleString()}</p>
+                <p className="service-stats-desc">Checks in the selected window.</p>
+              </article>
+              <article className="service-stats-card service-stats-card--online" aria-label="Successful checks">
+                <h3>Successful</h3>
+                <p className="service-stats-value">{metrics.successfulChecks.toLocaleString()}</p>
+                <p className="service-stats-desc">Checks that returned a success response.</p>
+              </article>
+              <article className="service-stats-card service-stats-card--offline" aria-label="Failed checks">
+                <h3>Failed</h3>
+                <p className="service-stats-value">{metrics.failedChecks.toLocaleString()}</p>
+                <p className="service-stats-desc">Checks that did not return success.</p>
+              </article>
+              <article className="service-stats-card service-stats-card--accent" aria-label="Uptime percentage">
+                <h3>Uptime</h3>
+                <p className="service-stats-value">
+                  {metrics.totalChecks > 0 ? `${metrics.uptimePercentage}%` : '—'}
+                </p>
+                <p className="service-stats-desc">
+                  {metrics.totalChecks > 0 ? 'Percentage of successful checks.' : 'No checks recorded in this window.'}
+                </p>
+              </article>
+              <article className="service-stats-card service-stats-card--response" aria-label="Average response time">
+                <h3>Avg response</h3>
+                <p className="service-stats-value">
+                  {metrics.averageResponseTime !== null ? `${metrics.averageResponseTime} ms` : '—'}
+                </p>
+                <p className="service-stats-desc">
+                  {metrics.averageResponseTime !== null ? 'Average response time for successful checks.' : 'No response time data available.'}
+                </p>
+              </article>
+            </div>
+          )}
+
+          {statsState.status === 'idle' && (
+            <div className="service-stats-empty" role="status">
+              <p>Select a time window above to view monitoring statistics.</p>
             </div>
           )}
         </section>

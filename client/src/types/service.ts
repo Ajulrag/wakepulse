@@ -83,3 +83,42 @@ export interface DeleteServiceResponse {
   success: true
   message: string
 }
+
+export interface ServiceSummaryMetrics {
+  window: '24h' | '7d' | '30d'
+  totalChecks: number
+  successfulChecks: number
+  failedChecks: number
+  uptimePercentage: number
+  averageResponseTime: number | null
+  minimumResponseTime: number | null
+  maximumResponseTime: number | null
+}
+
+export interface ServiceSummaryLatestCheck {
+  id: string
+  status: string
+  statusCode: number | null
+  responseTime: number | null
+  error: string | null
+  checkedAt: string
+}
+
+export interface ServiceSummaryResponse {
+  success: true
+  summary: {
+    service: {
+      id: string
+      name: string
+      status: ServiceStatus
+      enabled: boolean
+      lastCheckedAt: string | null
+      lastSuccessAt: string | null
+      lastStatusCode: number | null
+      lastResponseTime: number | null
+      nextCheckAt: string | null
+    }
+    metrics: ServiceSummaryMetrics
+    latestCheck: ServiceSummaryLatestCheck | null
+  }
+}
