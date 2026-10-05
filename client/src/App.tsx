@@ -9,6 +9,7 @@ import { RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
 import { ServicesPage } from './pages/ServicesPage'
+import { ServiceDetailsPage } from './pages/ServiceDetailsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -73,6 +74,7 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="services" element={<ServicesPage />} />
+        <Route path="services/:serviceId" element={<ServiceDetailsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

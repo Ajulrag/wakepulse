@@ -1007,6 +1007,225 @@
   margin-bottom: 28px;
 }
 
+.service-details-back-link {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  color: #286e68;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.service-details-back-link:hover {
+  color: #145e56;
+  text-decoration: underline;
+}
+
+.service-details-back-link:focus-visible,
+.services-details-link:focus-visible {
+  outline: 2px solid #168f82;
+  outline-offset: 3px;
+}
+
+.service-details-back-link svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.service-details-page-title {
+  overflow-wrap: anywhere;
+}
+
+.service-details-section {
+  margin-bottom: 28px;
+}
+
+.service-details-panel {
+  min-height: 0;
+  padding: 22px;
+}
+
+.service-details-identity {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.service-details-endpoint {
+  min-width: 0;
+}
+
+.service-details-provider {
+  color: #68778b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.service-details-endpoint h3 {
+  margin: 6px 0 8px;
+  color: #2c3a4f;
+  font-size: 17px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.service-details-endpoint p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  margin: 0;
+  color: #68778b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.service-details-endpoint code {
+  color: #40566c;
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+
+.service-details-statuses {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-details-monitoring {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.service-details-monitoring--enabled {
+  color: #278d6b;
+  background: rgb(44 167 126 / 12%);
+}
+
+.service-details-monitoring--disabled {
+  color: #68778b;
+  background: #edf1f5;
+}
+
+.service-details-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 5px 0 0;
+}
+
+.service-details-facts > div {
+  min-width: 0;
+  padding: 15px 12px 12px 0;
+}
+
+.service-details-facts dt {
+  margin-bottom: 6px;
+  color: #68778b;
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.service-details-facts dd {
+  margin: 0;
+  color: #2c3a4f;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.service-details-note {
+  margin: 7px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #edf0f4;
+  color: #68778b;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.service-details-loading {
+  display: flex;
+  min-height: 250px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 17px;
+  padding: 28px;
+}
+
+.service-details-loading .skeleton-bar--label {
+  width: 24%;
+}
+
+.service-details-loading .skeleton-bar--value {
+  width: 38%;
+}
+
+.service-details-loading .skeleton-bar--description {
+  width: 63%;
+}
+
+.service-details-message {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.service-details-message h3 {
+  margin: 0;
+  color: #35445a;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.service-details-message p {
+  max-width: 420px;
+  margin: 7px 0 0;
+  color: #68778b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.service-details-message .service-details-back-link {
+  margin: 12px 0 0;
+}
+
+.services-details-link {
+  color: #2c3a4f;
+  text-decoration: none;
+}
+
+.services-details-link:hover {
+  color: #176f67;
+  text-decoration: underline;
+}
+
 .services-section-heading {
   gap: 16px;
 }
@@ -2071,6 +2290,23 @@
     flex-wrap: wrap;
   }
 
+  .service-details-panel {
+    padding: 18px;
+  }
+
+  .service-details-identity {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .service-details-statuses {
+    flex: 1 1 auto;
+  }
+
+  .service-details-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .services-dialog-content {
     padding: 21px 18px 18px;
   }
@@ -2110,6 +2346,10 @@
   .summary-card,
   .statistics-card {
     min-height: 116px;
+  }
+
+  .service-details-facts {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .activity-details {

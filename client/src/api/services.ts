@@ -66,7 +66,7 @@ const serviceProviders = [
 const serviceMethods = ['GET', 'HEAD', 'POST'] as const satisfies readonly ServiceMethod[]
 const serviceStatuses = ['unknown', 'online', 'offline', 'disabled'] as const satisfies readonly ServiceStatus[]
 
-function isMonitoredService(value: unknown): value is MonitoredService {
+export function isMonitoredService(value: unknown): value is MonitoredService {
   return (
     isRecord(value) &&
     typeof value.id === 'string' &&

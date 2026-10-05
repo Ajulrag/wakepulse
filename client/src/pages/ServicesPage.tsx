@@ -6,6 +6,7 @@ import {
   useState,
   type FormEvent,
 } from 'react'
+import { Link } from 'react-router-dom'
 import {
   createMonitoredService,
   deleteMonitoredService,
@@ -1293,12 +1294,14 @@ export function ServicesPage() {
                       return (
                         <tr key={service.id}>
                           <th className="services-table-service" scope="row">
-                            <span
-                              className="services-table-service-name"
+                            <Link
+                              className="services-table-service-name services-details-link"
+                              to={`/services/${encodeURIComponent(service.id)}`}
+                              aria-label={`View details for ${service.name}`}
                               title={service.name}
                             >
                               {service.name}
-                            </span>
+                            </Link>
                             <span className="services-provider">
                               {providerLabels[service.provider]}
                             </span>

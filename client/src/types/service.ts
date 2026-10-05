@@ -39,6 +39,11 @@ export interface UserServicesResponse {
   services: MonitoredService[]
 }
 
+export interface ServiceDetailsResponse {
+  success: true
+  service: MonitoredService
+}
+
 export interface CreateServiceInput {
   name: string
   provider: ServiceProvider
