@@ -280,6 +280,61 @@ export function ServiceDetailsPage() {
           )}
 
           {service && (
+            <div className="service-overview-grid" aria-label="Service status overview">
+              <article className={`service-overview-card service-overview-card--${service.status}`} aria-label={`Health: ${serviceStatusLabels[service.status]}`}>
+                <div className="service-overview-card-heading">
+                  <h3>Health</h3>
+                  <span className={`service-overview-indicator service-overview-indicator--${service.status}`} aria-hidden="true" />
+                </div>
+                <p className="service-overview-value">{serviceStatusLabels[service.status]}</p>
+                <p className="service-overview-desc">
+                  {service.status === 'online' && 'Service is responding successfully.'}
+                  {service.status === 'offline' && 'Service did not respond to the latest check.'}
+                  {service.status === 'unknown' && 'Health has not yet been established.'}
+                  {service.status === 'disabled' && 'Monitoring is disabled; health is not tracked.'}
+                </p>
+              </article>
+
+              <article className={`service-overview-card service-overview-card--${service.enabled ? 'enabled' : 'disabled'}`} aria-label={`Monitoring: ${service.enabled ? 'Enabled' : 'Disabled'}`}>
+                <div className="service-overview-card-heading">
+                  <h3>Monitoring</h3>
+                  <span className={`service-overview-indicator service-overview-indicator--${service.enabled ? 'enabled' : 'disabled'}`} aria-hidden="true" />
+                </div>
+                <p className="service-overview-value">{service.enabled ? 'Enabled' : 'Disabled'}</p>
+                <p className="service-overview-desc">
+                  {service.enabled ? 'Checks are scheduled and running.' : 'No checks are scheduled.'}
+                </p>
+              </article>
+
+              <article className="service-overview-card service-overview-card--checks" aria-label="Last check">
+                <div className="service-overview-card-heading">
+                  <h3>Last check</h3>
+                  <span className="service-overview-indicator service-overview-indicator--checks" aria-hidden="true" />
+                </div>
+                <p className="service-overview-value">
+                  {service.lastCheckedAt === null ? 'Never' : formatDateTime(service.lastCheckedAt, 'Never')}
+                </p>
+                <p className="service-overview-desc">
+                  {service.lastCheckedAt === null ? 'No checks recorded yet.' : 'Most recent monitoring check.'}
+                </p>
+              </article>
+
+              <article className="service-overview-card service-overview-card--checks" aria-label="Next check">
+                <div className="service-overview-card-heading">
+                  <h3>Next check</h3>
+                  <span className="service-overview-indicator service-overview-indicator--checks" aria-hidden="true" />
+                </div>
+                <p className="service-overview-value">
+                  {!service.enabled ? 'Disabled' : service.nextCheckAt === null ? 'Not scheduled' : formatDateTime(service.nextCheckAt, 'Not scheduled')}
+                </p>
+                <p className="service-overview-desc">
+                  {!service.enabled ? 'Monitoring is disabled.' : service.nextCheckAt === null ? 'No upcoming check scheduled.' : 'Next scheduled monitoring check.'}
+                </p>
+              </article>
+            </div>
+          )}
+
+          {service && (
             <div className="dashboard-panel service-details-panel">
               <div className="service-details-identity">
                 <div className="service-details-endpoint">
@@ -375,9 +430,9 @@ export function ServiceDetailsPage() {
               <p className="service-details-note" role="status">
                 {service.lastCheckedAt === null
                   ? 'No monitoring checks have been recorded for this service.'
-                  : service.lastError === null
-                    ? 'No error details were reported by the latest check.'
-                    : 'The latest check reported an issue. Detailed error information is not shown here.'}
+                  : service.lastError !== null
+                    ? `Latest check reported an error: ${service.lastError}`
+                    : 'No error details were reported by the latest check.'}
               </p>
             </div>
           )}
