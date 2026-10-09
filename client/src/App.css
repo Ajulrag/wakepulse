@@ -215,6 +215,235 @@
   opacity: 0.7;
 }
 
+.history-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.history-stat-card {
+  display: flex;
+  min-height: 104px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 22px;
+}
+
+.history-stat-card strong {
+  color: var(--color-ink);
+  font-size: clamp(28px, 3vw, 36px);
+  letter-spacing: -1px;
+}
+
+.history-stat-card--success strong {
+  color: #0e7f5d;
+}
+
+.history-stat-card--warning strong {
+  color: #b36a00;
+}
+
+.history-stat-label {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history-table-panel {
+  padding: 22px 18px 10px;
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #edf1f5;
+  text-align: left;
+}
+
+.history-table th {
+  color: #66768e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history-table td {
+  color: #2a3752;
+}
+
+.history-service-name {
+  font-weight: 600;
+}
+
+.history-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-pill--success {
+  color: #0d7a5c;
+  background: #e8f8f2;
+}
+
+.history-pill--failed {
+  color: #b52f2b;
+  background: #fdeceb;
+}
+
+.history-pill--timeout {
+  color: #a76500;
+  background: #fff2db;
+}
+
+.history-pill--error {
+  color: #6d3f92;
+  background: #f3ebff;
+}
+
+.settings-panel {
+  padding: 22px 20px 16px;
+  margin-bottom: 24px;
+}
+
+.settings-account-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.settings-account-card > div {
+  padding: 16px;
+  border: 1px solid #edf1f5;
+  border-radius: 10px;
+  background: #f9fbfd;
+}
+
+.settings-account-card strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-ink);
+  font-size: 15px;
+}
+
+.settings-label {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-field-group {
+  display: grid;
+  gap: 8px;
+  max-width: 480px;
+  margin-top: 18px;
+}
+
+.settings-field-label {
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-field-group select {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #dfe7f0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-ink);
+  font-size: 14px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1f5;
+}
+
+.settings-toggle-row strong {
+  display: block;
+  color: var(--color-ink);
+  font-size: 15px;
+}
+
+.settings-toggle-row p {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.settings-switch {
+  position: relative;
+  display: inline-flex;
+  width: 52px;
+  height: 30px;
+}
+
+.settings-switch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.settings-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #dbe4ed;
+  transition: background 120ms ease;
+}
+
+.settings-slider::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.12);
+  transition: transform 120ms ease;
+}
+
+.settings-switch input:checked + .settings-slider {
+  background: #168f82;
+}
+
+.settings-switch input:checked + .settings-slider::before {
+  transform: translateX(22px);
+}
+
 .page-content {
   width: min(100%, 1440px);
   margin: 0 auto;

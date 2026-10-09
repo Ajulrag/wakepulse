@@ -13,6 +13,8 @@ import { ServiceDetailsPage } from './pages/ServiceDetailsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { HistoryPage } from './pages/HistoryPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
@@ -75,6 +77,8 @@ export default function App() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="services/:serviceId" element={<ServiceDetailsPage />} />
+        <Route path="history" element={<HistoryPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

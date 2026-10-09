@@ -4,7 +4,7 @@ import { useAuth } from '../context/useAuth'
 import '../App.css'
 
 interface AppLayoutProps {
-  activePage: 'dashboard' | 'services'
+  activePage: 'dashboard' | 'services' | 'history' | 'settings'
   children: ReactNode
 }
 
@@ -15,7 +15,15 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
   const logoutSubmissionLock = useRef(false)
   const accountName =
     authState.status === 'authenticated' ? authState.user.name : ''
-  const currentPageLabel = activePage === 'services' ? 'Services' : 'Dashboard'
+
+  const currentPageLabel =
+    activePage === 'dashboard'
+      ? 'Dashboard'
+      : activePage === 'services'
+        ? 'Services'
+        : activePage === 'history'
+          ? 'Monitoring / History'
+          : 'Settings'
 
   const handleLogout = async () => {
     if (logoutSubmissionLock.current) {
@@ -80,20 +88,28 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
             </svg>
             <span>Services</span>
           </Link>
-          <button className="nav-link nav-link--placeholder" type="button" disabled>
+          <Link
+            className={`nav-link${activePage === 'history' ? ' nav-link--active' : ''}`}
+            to="/history"
+            aria-current={activePage === 'history' ? 'page' : undefined}
+          >
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M2.5 10h3l2-5 4 10 2-5h4" />
               <circle cx="10" cy="10" r="8" />
             </svg>
             <span>Monitoring / History</span>
-          </button>
-          <button className="nav-link nav-link--placeholder" type="button" disabled>
+          </Link>
+          <Link
+            className={`nav-link${activePage === 'settings' ? ' nav-link--active' : ''}`}
+            to="/settings"
+            aria-current={activePage === 'settings' ? 'page' : undefined}
+          >
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="10" cy="10" r="3" />
               <path d="m16.2 11.8 1.1.9-1.4 2.4-1.4-.5a6.7 6.7 0 0 1-1.5.9l-.3 1.5h-2.8l-.3-1.5a6.7 6.7 0 0 1-1.5-.9l-1.4.5-1.4-2.4 1.1-.9a6.4 6.4 0 0 1 0-1.8l-1.1-.9 1.4-2.4 1.4.5a6.7 6.7 0 0 1 1.5-.9l.3-1.5h2.8l.3 1.5a6.7 6.7 0 0 1 1.5.9l1.4-.5 1.4 2.4-1.1.9a6.4 6.4 0 0 1 0 1.8Z" />
             </svg>
             <span>Settings</span>
-          </button>
+          </Link>
         </nav>
 
         <div className="sidebar-footer">
