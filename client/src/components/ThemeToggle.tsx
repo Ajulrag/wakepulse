@@ -11,6 +11,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={`Switch to ${nextTheme} theme`}
       aria-pressed={theme === 'dark'}
+      title={`Switch to ${nextTheme} theme`}
     >
       {theme === 'dark' ? (
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -22,7 +23,6 @@ export function ThemeToggle() {
           <path d="M16.2 12.1A7 7 0 0 1 7.9 3.8a7 7 0 1 0 8.3 8.3Z" />
         </svg>
       )}
-      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
     </button>
   )
 }
