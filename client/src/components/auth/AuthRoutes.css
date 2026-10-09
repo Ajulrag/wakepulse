@@ -13,6 +13,10 @@
   background-size: 40px 40px, 40px 40px, auto;
 }
 
+.auth-state-page {
+  position: relative;
+}
+
 .auth-shell {
   display: grid;
   width: min(1180px, 100%);
@@ -26,6 +30,7 @@
 }
 
 .auth-form-panel {
+  position: relative;
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -621,11 +626,17 @@
   }
 
   .auth-form-panel {
-    padding: 42px clamp(24px, 8vw, 48px);
+    padding: 88px clamp(24px, 8vw, 48px) 42px;
   }
 
   .auth-showcase {
     display: none;
+  }
+
+  .auth-form-panel > .theme-toggle {
+    position: absolute;
+    top: 6px;
+    right: 12px;
   }
 }
 
@@ -635,11 +646,115 @@
   }
 
   .auth-form-panel {
-    padding: 32px 21px;
+    padding: 88px 21px 32px;
   }
 
   .auth-trust-row {
     gap: 8px;
     font-size: 8px;
   }
+}
+
+html[data-theme='dark'] .auth-state-page,
+html[data-theme='dark'] .auth-page {
+  color: #e2e8f0;
+  background-color: #101827;
+  background-image:
+    linear-gradient(rgb(112 139 166 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(112 139 166 / 7%) 1px, transparent 1px),
+    radial-gradient(ellipse at 54% 2%, rgb(29 113 101 / 20%), transparent 42%);
+}
+
+html[data-theme='dark'] .auth-shell,
+html[data-theme='dark'] .auth-state-card,
+html[data-theme='dark'] .auth-placeholder-card {
+  border-color: #334155;
+  background: #182436;
+  box-shadow: 0 22px 65px rgb(0 0 0 / 30%);
+}
+
+.auth-form-panel > .theme-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+}
+
+.auth-state-page > .theme-toggle {
+  position: absolute;
+  top: 14px;
+  right: 28px;
+}
+
+html[data-theme='dark'] .auth-heading h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme='dark'] .auth-heading > p:last-child,
+html[data-theme='dark'] .auth-login-register,
+html[data-theme='dark'] .auth-state-card p,
+html[data-theme='dark'] .auth-placeholder-card p {
+  color: #a5b2c4;
+}
+
+html[data-theme='dark'] .auth-login-field label {
+  color: #d3dce8;
+}
+
+html[data-theme='dark'] .auth-input-wrap input,
+html[data-theme='dark'] .auth-login-field > input {
+  border-color: #425168;
+  color: #e2e8f0;
+  background: #111c2c;
+}
+
+html[data-theme='dark'] .auth-input-wrap input:focus-visible,
+html[data-theme='dark'] .auth-login-field > input:focus-visible {
+  border-color: #42bfa8;
+  background: #111c2c;
+}
+
+html[data-theme='dark'] .auth-input-wrap input:disabled,
+html[data-theme='dark'] .auth-login-field > input:disabled {
+  color: #a5b2c4;
+  background: #202d40;
+}
+
+html[data-theme='dark'] .auth-login-error,
+html[data-theme='dark'] .auth-result[role='alert'] {
+  border-color: #70434b;
+  color: #f2b8be;
+  background: #35232a;
+}
+
+html[data-theme='dark'] .auth-logout-warning {
+  border-color: #625334;
+  color: #f0d795;
+  background: #352f20;
+}
+
+html[data-theme='dark'] .auth-result {
+  border-color: #37665f;
+  color: #c3cedc;
+  background: #17322f;
+}
+
+html[data-theme='dark'] .auth-result strong {
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .auth-result-icon {
+  color: #73d7c2;
+  background: #245047;
+}
+
+html[data-theme='dark'] .auth-trust-row {
+  border-color: #334155;
+  color: #91a0b5;
+}
+
+html[data-theme='dark'] .auth-state-page .theme-toggle,
+html[data-theme='dark'] .auth-page .theme-toggle {
+  border-color: #3b4a5e;
+  color: #e2e8f0;
+  background: #1b2738;
 }

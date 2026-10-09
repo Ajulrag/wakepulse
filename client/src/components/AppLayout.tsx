@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
+import { ThemeToggle } from './ThemeToggle'
 import '../App.css'
 
 interface AppLayoutProps {
@@ -127,6 +128,7 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
             <span className="breadcrumb-current">{currentPageLabel}</span>
           </nav>
           <div className="topbar-actions">
+            <ThemeToggle />
             {accountName && <span className="topbar-user">{accountName}</span>}
             <button
               className="logout-button"

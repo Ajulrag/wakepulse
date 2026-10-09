@@ -17,12 +17,14 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ThemeToggle } from './components/ThemeToggle'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
 
   return (
     <main className="auth-state-page" role="alert">
+      <ThemeToggle />
       <section className="auth-state-card">
         <h1>Unable to verify your session</h1>
         <p>{message}</p>
@@ -41,6 +43,7 @@ function PublicOnly() {
   if (state.status === 'checking') {
     return (
       <main className="auth-state-page" role="status" aria-live="polite">
+        <ThemeToggle />
         <p>Checking your session…</p>
       </main>
     )

@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../api/request'
 import { AuthShowcase } from '../components/auth/AuthShowcase'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { useAuth } from '../context/useAuth'
 
 interface LoginRouteState {
@@ -129,6 +130,7 @@ export function LoginPage() {
     <main className="auth-page">
       <section className="auth-shell" aria-label="Sign in to WakePulse">
         <div className="auth-form-panel">
+          <ThemeToggle />
           <div className="auth-heading">
             <p className="auth-eyebrow"><span />Service monitoring</p>
             <h1 id="login-title">Welcome back</h1>

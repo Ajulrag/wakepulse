@@ -2602,3 +2602,259 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+html[data-theme='dark'] .app-shell {
+  --color-ink: #e2e8f0;
+  --color-muted: #a5b2c4;
+  --color-subtle: #a5b2c4;
+  --color-border: #334155;
+  color: #e2e8f0;
+  background: #101827;
+}
+
+html[data-theme='dark'] .main-content {
+  background: #101827;
+}
+
+html[data-theme='dark'] .topbar {
+  border-color: #29374a;
+  background: #151f2f;
+}
+
+html[data-theme='dark'] .breadcrumb,
+html[data-theme='dark'] .topbar-note,
+html[data-theme='dark'] .topbar-user,
+html[data-theme='dark'] .breadcrumb-current,
+html[data-theme='dark'] .logout-button,
+html[data-theme='dark'] .history-table td,
+html[data-theme='dark'] .history-table th,
+html[data-theme='dark'] .settings-account-card strong,
+html[data-theme='dark'] .settings-field-label,
+html[data-theme='dark'] .settings-toggle-row strong,
+html[data-theme='dark'] .page-heading h1,
+html[data-theme='dark'] .summary-section-heading h2,
+html[data-theme='dark'] .panel-heading h2,
+html[data-theme='dark'] .activity-service-name,
+html[data-theme='dark'] .activity-empty-state h3,
+html[data-theme='dark'] .upcoming-service-name,
+html[data-theme='dark'] .upcoming-empty-state h3,
+html[data-theme='dark'] .service-details-endpoint h3,
+html[data-theme='dark'] .service-details-facts dd,
+html[data-theme='dark'] .service-details-message h3,
+html[data-theme='dark'] .services-details-link,
+html[data-theme='dark'] .services-filter-field label,
+html[data-theme='dark'] .services-dialog-heading h2,
+html[data-theme='dark'] .services-form-field label,
+html[data-theme='dark'] .services-delete-target strong {
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .breadcrumb,
+html[data-theme='dark'] .topbar-note,
+html[data-theme='dark'] .topbar-user,
+html[data-theme='dark'] .history-table th,
+html[data-theme='dark'] .settings-label,
+html[data-theme='dark'] .settings-toggle-row p,
+html[data-theme='dark'] .page-description,
+html[data-theme='dark'] .summary-section-heading p,
+html[data-theme='dark'] .panel-heading p,
+html[data-theme='dark'] .activity-details,
+html[data-theme='dark'] .activity-detail-label,
+html[data-theme='dark'] .activity-details time,
+html[data-theme='dark'] .activity-empty-state p,
+html[data-theme='dark'] .upcoming-check-details,
+html[data-theme='dark'] .upcoming-detail-label,
+html[data-theme='dark'] .upcoming-empty-state p,
+html[data-theme='dark'] .service-details-provider,
+html[data-theme='dark'] .service-details-endpoint p,
+html[data-theme='dark'] .service-details-facts dt,
+html[data-theme='dark'] .service-details-note,
+html[data-theme='dark'] .service-details-message p,
+html[data-theme='dark'] .services-results-count,
+html[data-theme='dark'] .services-required-note,
+html[data-theme='dark'] .services-dialog-heading p:last-child,
+html[data-theme='dark'] .services-delete-target span,
+html[data-theme='dark'] .services-ping-hint,
+html[data-theme='dark'] .services-ping-feedback {
+  color: #a5b2c4;
+}
+
+html[data-theme='dark'] .page-heading,
+html[data-theme='dark'] .dashboard-panel,
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .statistics-card,
+html[data-theme='dark'] .services-results-toolbar,
+html[data-theme='dark'] .services-dialog {
+  border-color: #334155;
+  background: #182436;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 16%);
+}
+
+html[data-theme='dark'] .settings-account-card > div,
+html[data-theme='dark'] .services-delete-target,
+html[data-theme='dark'] .services-table thead,
+html[data-theme='dark'] .activity-window-label,
+html[data-theme='dark'] .upcoming-provider {
+  border-color: #334155;
+  background: #202d40;
+}
+
+html[data-theme='dark'] .settings-field-group select,
+html[data-theme='dark'] .logout-button,
+html[data-theme='dark'] .dashboard-retry-button,
+html[data-theme='dark'] .services-filter-field input,
+html[data-theme='dark'] .services-filter-field select,
+html[data-theme='dark'] .services-dialog-close,
+html[data-theme='dark'] .services-form input,
+html[data-theme='dark'] .services-form select,
+html[data-theme='dark'] .services-cancel-button,
+html[data-theme='dark'] .services-toggle-button,
+html[data-theme='dark'] .services-edit-button,
+html[data-theme='dark'] .services-delete-button {
+  border-color: #425168;
+  color: #e2e8f0;
+  background: #111c2c;
+}
+
+html[data-theme='dark'] .settings-field-group select:focus,
+html[data-theme='dark'] .services-filter-field input:focus,
+html[data-theme='dark'] .services-filter-field select:focus,
+html[data-theme='dark'] .services-form input:focus,
+html[data-theme='dark'] .services-form select:focus {
+  border-color: #42bfa8;
+}
+
+html[data-theme='dark'] .settings-toggle-row,
+html[data-theme='dark'] .history-table th,
+html[data-theme='dark'] .history-table td,
+html[data-theme='dark'] .panel-heading,
+html[data-theme='dark'] .activity-item,
+html[data-theme='dark'] .activity-loading-row,
+html[data-theme='dark'] .upcoming-check-item,
+html[data-theme='dark'] .upcoming-loading-row,
+html[data-theme='dark'] .service-details-identity,
+html[data-theme='dark'] .service-details-note,
+html[data-theme='dark'] .services-table thead th,
+html[data-theme='dark'] .services-table tbody th,
+html[data-theme='dark'] .services-table tbody td,
+html[data-theme='dark'] .services-form-actions {
+  border-color: #2d3b4e;
+}
+
+html[data-theme='dark'] .services-table,
+html[data-theme='dark'] .services-table-service-name,
+html[data-theme='dark'] .services-domain,
+html[data-theme='dark'] .services-provider,
+html[data-theme='dark'] .services-endpoint,
+html[data-theme='dark'] .services-details-link,
+html[data-theme='dark'] .service-details-endpoint code,
+html[data-theme='dark'] .services-monitoring--disabled,
+html[data-theme='dark'] .service-details-monitoring--disabled {
+  color: #c3cedc;
+}
+
+html[data-theme='dark'] .logout-button:hover:not(:disabled),
+html[data-theme='dark'] .dashboard-retry-button:hover,
+html[data-theme='dark'] .services-dialog-close:hover:not(:disabled),
+html[data-theme='dark'] .services-cancel-button:hover:not(:disabled),
+html[data-theme='dark'] .services-toggle-button:hover:not(:disabled),
+html[data-theme='dark'] .services-edit-button:hover:not(:disabled) {
+  border-color: #5a6b81;
+  background: #253349;
+}
+
+html[data-theme='dark'] .services-clear-filters,
+html[data-theme='dark'] .services-ping-button {
+  border-color: #37665f;
+  color: #73d7c2;
+  background: #17322f;
+}
+
+html[data-theme='dark'] .services-clear-filters:hover,
+html[data-theme='dark'] .services-ping-button:hover:not(:disabled) {
+  border-color: #4c8b81;
+  background: #1c403b;
+}
+
+html[data-theme='dark'] .services-page-notice {
+  border-color: #37665f;
+  color: #a6ddd2;
+  background: #17322f;
+}
+
+html[data-theme='dark'] .services-required-note,
+html[data-theme='dark'] .services-field-hint,
+html[data-theme='dark'] .services-form input::placeholder {
+  color: #91a0b5;
+}
+
+html[data-theme='dark'] .services-form-error,
+html[data-theme='dark'] .dashboard-error {
+  border-color: #70434b;
+  color: #f2b8be;
+  background: #35232a;
+}
+
+html[data-theme='dark'] .services-form-error > span,
+html[data-theme='dark'] .dashboard-error-mark {
+  color: #f2a9b1;
+  background: #513038;
+}
+
+html[data-theme='dark'] .dashboard-error h3,
+html[data-theme='dark'] .dashboard-error p,
+html[data-theme='dark'] .services-form-error,
+html[data-theme='dark'] .services-field-error,
+html[data-theme='dark'] .services-toggle-error,
+html[data-theme='dark'] .services-ping-feedback--error,
+html[data-theme='dark'] .services-delete-warning {
+  color: #f2b8be;
+}
+
+html[data-theme='dark'] .services-delete-warning,
+html[data-theme='dark'] .services-status-error {
+  color: #f2a9b1;
+}
+
+html[data-theme='dark'] .services-delete-confirm-button {
+  border-color: #a6424b;
+  color: #fff;
+  background: #ad4a53;
+}
+
+html[data-theme='dark'] .skeleton-bar,
+html[data-theme='dark'] .settings-slider {
+  background: #334155;
+}
+
+html[data-theme='dark'] .settings-slider::before {
+  background: #cbd5e1;
+}
+
+html[data-theme='dark'] .history-pill--success {
+  color: #75d6b4;
+  background: #173a33;
+}
+
+html[data-theme='dark'] .history-pill--failed {
+  color: #f2a9a4;
+  background: #412a2c;
+}
+
+html[data-theme='dark'] .history-pill--timeout {
+  color: #f2c477;
+  background: #403522;
+}
+
+html[data-theme='dark'] .history-pill--error {
+  color: #c7b0ed;
+  background: #352b49;
+}
+
+html[data-theme='dark'] .activity-status,
+html[data-theme='dark'] .upcoming-status,
+html[data-theme='dark'] .services-status,
+html[data-theme='dark'] .service-details-monitoring--enabled,
+html[data-theme='dark'] .services-monitoring--enabled {
+  filter: brightness(1.2);
+}
