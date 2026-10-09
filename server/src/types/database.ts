@@ -22,6 +22,14 @@ export interface SessionDocument {
   lastUsedAt: Date;
 }
 
+export interface PasswordResetDocument {
+  _id?: ObjectId;
+  userId: ObjectId;
+  tokenHash: string;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
 export type ServiceProvider =
   | "render"
   | "railway"

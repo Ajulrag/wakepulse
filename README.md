@@ -31,6 +31,7 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 ## Features
 
 - User authentication with protected dashboard access
+- Single-use, one-hour password reset links delivered by SMTP
 - Service registration, editing, pause/resume, removal, and manual checks
 - Scheduled health monitoring with concurrency-safe polling
 - Dashboard summaries and recent activity views
@@ -39,7 +40,7 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 
 ## Deployment
 
-1. Copy `server/.env.example` to `server/.env` and fill in MongoDB and JWT values.
+1. Copy `server/.env.example` to `server/.env` and fill in MongoDB, JWT, and SMTP values.
 2. Create a root `.env` if you want to override the frontend and server host settings.
 3. Run:
    - `docker compose up --build`

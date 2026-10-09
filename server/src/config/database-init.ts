@@ -3,6 +3,7 @@ import {
   sessionsCollection,
   servicesCollection,
   checkLogsCollection,
+  passwordResetsCollection,
 } from "./collections.js";
 
 export async function initializeDatabase(): Promise<void> {
@@ -17,6 +18,16 @@ export async function initializeDatabase(): Promise<void> {
   );
 
   await sessionsCollection().createIndex(
+    { expiresAt: 1 },
+    { expireAfterSeconds: 0 },
+  );
+
+  await passwordResetsCollection().createIndex(
+    { tokenHash: 1 },
+    { unique: true },
+  );
+
+  await passwordResetsCollection().createIndex(
     { expiresAt: 1 },
     { expireAfterSeconds: 0 },
   );

@@ -34,3 +34,13 @@ export interface LogoutResponse {
   success: true
   message: string
 }
+
+export interface ForgotPasswordResponse {
+  success: true
+  message: string
+}
+
+export interface ResetPasswordCredentials {
+  token: string
+  password: string
+}

@@ -7,6 +7,7 @@ import type {
   SessionDocument,
   ServiceDocument,
   CheckLogDocument,
+  PasswordResetDocument,
 } from "../types/database.js";
 
 export function usersCollection(): Collection<UserDocument> {
@@ -15,6 +16,10 @@ export function usersCollection(): Collection<UserDocument> {
 
 export function sessionsCollection(): Collection<SessionDocument> {
   return getDatabase().collection<SessionDocument>("sessions");
+}
+
+export function passwordResetsCollection(): Collection<PasswordResetDocument> {
+  return getDatabase().collection<PasswordResetDocument>("password_resets");
 }
 
 export function servicesCollection(): Collection<ServiceDocument> {

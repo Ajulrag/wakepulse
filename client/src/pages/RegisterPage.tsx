@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../api/request'
+import { AuthShowcase } from '../components/auth/AuthShowcase'
 import { useAuth } from '../context/useAuth'
 
 interface RegisterFieldErrors {
@@ -135,30 +136,26 @@ export function RegisterPage() {
   }
 
   return (
-    <main className="auth-placeholder-page">
-      <section className="auth-login-card auth-register-card" aria-labelledby="register-title">
-        <Link className="auth-login-brand" to="/login" aria-label="WakePulse sign in">
-          <span className="auth-login-brand-mark" aria-hidden="true">W</span>
-          <span>wakepulse</span>
-        </Link>
+    <main className="auth-page auth-page--register">
+      <section className="auth-shell" aria-label="Create a WakePulse account">
+        <div className="auth-form-panel">
+          <div className="auth-heading">
+            <p className="auth-eyebrow"><span />Service monitoring</p>
+            <h1 id="register-title">Create your account</h1>
+            <p>Start monitoring your services with WakePulse.</p>
+          </div>
 
-        <div className="auth-login-heading auth-register-heading">
-          <p className="auth-login-eyebrow">SERVICE MONITORING</p>
-          <h1 id="register-title">Create your account</h1>
-          <p>Start monitoring your services with WakePulse.</p>
-        </div>
-
-        <form
-          className="auth-login-form auth-register-form"
-          noValidate
-          onSubmit={(event) => void handleSubmit(event)}
-          aria-busy={isSubmitting}
-        >
-          {formError && (
-            <div className="auth-login-error" role="alert">
-              {formError}
-            </div>
-          )}
+          <form
+            className="auth-login-form auth-register-form"
+            noValidate
+            onSubmit={(event) => void handleSubmit(event)}
+            aria-busy={isSubmitting}
+          >
+            {formError && (
+              <div className="auth-login-error" role="alert">
+                {formError}
+              </div>
+            )}
 
           <div className="auth-login-field">
             <label htmlFor="register-name">Name</label>
@@ -275,11 +272,18 @@ export function RegisterPage() {
           <button className="auth-login-submit" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating account…' : 'Create account'}
           </button>
-        </form>
+          </form>
 
-        <p className="auth-login-register">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+          <p className="auth-login-register">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+          <div className="auth-trust-row">
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1 5 2v4c0 3.2-2.2 5.8-5 7-2.8-1.2-5-3.8-5-7V3l5-2Zm-2 6 1.4 1.5L10.5 5" /></svg>SOC 2 Type II Certified</span>
+            <i />
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="m5.3 8 1.8 1.8 3.7-4" /></svg>99.99% Uptime SLA</span>
+          </div>
+        </div>
+        <AuthShowcase />
       </section>
     </main>
   )

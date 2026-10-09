@@ -11,6 +11,14 @@ import { loginSchema, registerSchema } from "../validation/auth.js";
 import { usersCollection } from "../config/collections.js";
 import { sessionsCollection } from "../config/collections.js";
 import { verifyAccessToken } from "../utils/jwt.js";
+import {
+  requestPasswordReset,
+  resetPassword as updatePasswordFromReset,
+} from "../services/password-reset.service.js";
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validation/auth.js";
 
 export async function register(
   req: Request,
@@ -152,6 +160,74 @@ export async function login(
     res.status(500).json({
       success: false,
       message: "Unable to login",
+    });
+  }
+}
+
+export async function forgotPassword(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const result = forgotPasswordSchema.safeParse(req.body);
+
+  if (!result.success) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid password recovery data",
+      errors: result.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  try {
+    await requestPasswordReset(result.data);
+  } catch (error) {
+    console.error("Password recovery email delivery failed:", error);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "If an account exists for that email, a password reset link has been sent.",
+  });
+}
+
+export async function resetPassword(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const result = resetPasswordSchema.safeParse(req.body);
+
+  if (!result.success) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid password reset data",
+      errors: result.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  try {
+    await updatePasswordFromReset(result.data);
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. Sign in with your new password.",
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "INVALID_OR_EXPIRED_RESET_TOKEN"
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "This password reset link is invalid or has expired.",
+      });
+      return;
+    }
+
+    console.error("Password reset error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to reset password right now. Please try again.",
     });
   }
 }

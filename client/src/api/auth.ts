@@ -3,9 +3,11 @@ import type {
   AuthUser,
   AuthUserResponse,
   CurrentUserResponse,
+  ForgotPasswordResponse,
   LoginCredentials,
   LogoutResponse,
   RegisterCredentials,
+  ResetPasswordCredentials,
 } from '../types/auth'
 
 const AUTH_PATH = '/api/auth'
@@ -43,6 +45,14 @@ function isCurrentUserResponse(value: unknown): value is CurrentUserResponse {
 }
 
 function isLogoutResponse(value: unknown): value is LogoutResponse {
+  return (
+    isRecord(value) &&
+    value.success === true &&
+    typeof value.message === 'string'
+  )
+}
+
+function isMessageResponse(value: unknown): value is ForgotPasswordResponse {
   return (
     isRecord(value) &&
     value.success === true &&
@@ -106,6 +116,30 @@ export async function logoutUser(): Promise<void> {
   })
 
   if (!isLogoutResponse(payload)) {
+    throw invalidResponseError()
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const payload = await requestJson(`${AUTH_PATH}/forgot-password`, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+
+  if (!isMessageResponse(payload)) {
+    throw invalidResponseError()
+  }
+}
+
+export async function resetPassword(
+  credentials: ResetPasswordCredentials,
+): Promise<void> {
+  const payload = await requestJson(`${AUTH_PATH}/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  })
+
+  if (!isMessageResponse(payload)) {
     throw invalidResponseError()
   }
 }
