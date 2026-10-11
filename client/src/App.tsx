@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Navigate,
   Outlet,
@@ -5,6 +6,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom'
+import { BACKEND_ERROR_EVENT } from './api/request'
 import { RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
@@ -18,21 +20,17 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ThemeToggle } from './components/ThemeToggle'
+import { ErrorPage } from './components/ErrorPage'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
 
   return (
-    <main className="auth-state-page" role="alert">
-      <ThemeToggle />
-      <section className="auth-state-card">
-        <h1>Unable to verify your session</h1>
-        <p>{message}</p>
-        <button type="button" onClick={() => void refreshUser()}>
-          Try again
-        </button>
-      </section>
-    </main>
+    <ErrorPage
+      variant="session"
+      message={message}
+      onRetry={() => void refreshUser()}
+    />
   )
 }
 
@@ -70,6 +68,34 @@ function PublicOnly() {
 }
 
 export default function App() {
+  const [errorVariant, setErrorVariant] = useState<
+    'backend' | 'application' | null
+  >(null)
+
+  useEffect(() => {
+    const handleBackendError = () => setErrorVariant('backend')
+    const handleUnexpectedError = () => setErrorVariant('application')
+
+    window.addEventListener(BACKEND_ERROR_EVENT, handleBackendError)
+    window.addEventListener('error', handleUnexpectedError)
+    window.addEventListener('unhandledrejection', handleUnexpectedError)
+
+    return () => {
+      window.removeEventListener(BACKEND_ERROR_EVENT, handleBackendError)
+      window.removeEventListener('error', handleUnexpectedError)
+      window.removeEventListener('unhandledrejection', handleUnexpectedError)
+    }
+  }, [])
+
+  if (errorVariant) {
+    return (
+      <ErrorPage
+        variant={errorVariant}
+        onRetry={() => window.location.reload()}
+      />
+    )
+  }
+
   return (
     <Routes>
       <Route element={<PublicOnly />}>
@@ -88,7 +114,7 @@ export default function App() {
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<ErrorPage variant="not-found" />} />
     </Routes>
   )
 }

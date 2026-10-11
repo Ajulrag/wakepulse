@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
+import { ErrorPage } from '../ErrorPage'
 
 export function RequireAuth() {
   const { state, refreshUser } = useAuth()
@@ -15,13 +16,11 @@ export function RequireAuth() {
 
   if (state.status === 'error') {
     return (
-      <main className="auth-state" role="alert">
-        <h1>Unable to verify your session</h1>
-        <p>{state.message}</p>
-        <button type="button" onClick={() => void refreshUser()}>
-          Try again
-        </button>
-      </main>
+      <ErrorPage
+        variant="session"
+        message={state.message}
+        onRetry={() => void refreshUser()}
+      />
     )
   }
 

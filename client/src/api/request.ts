@@ -4,6 +4,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const UNMAPPED_FIELD_KEY = '__unmapped'
 const FALLBACK_FIELD_ERROR = 'This value is invalid.'
+export const BACKEND_ERROR_EVENT = 'wakepulse:backend-error'
+
+function reportBackendError() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(BACKEND_ERROR_EVENT))
+  }
+}
 
 // These are fixed, user-facing messages emitted by the current API. Unknown
 // server text is replaced with a status-specific message so implementation
@@ -192,12 +199,17 @@ export async function requestJson(
       throw cause
     }
 
+    reportBackendError()
     throw new ApiRequestError(
       'Unable to connect to the WakePulse API.',
       null,
       null,
       { cause },
     )
+  }
+
+  if (response.status >= 500) {
+    reportBackendError()
   }
 
   let payload: unknown = null
@@ -207,6 +219,7 @@ export async function requestJson(
       payload = await response.json()
     } catch (cause) {
       if (response.ok) {
+        reportBackendError()
         throw new ApiRequestError(
           'The WakePulse API returned an invalid JSON response.',
           response.status,

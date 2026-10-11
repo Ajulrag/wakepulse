@@ -1,0 +1,349 @@
+.error-page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 28px clamp(20px, 5vw, 72px);
+  color: #26354a;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgb(207 245 235 / 42%), transparent 42%),
+    #f6f8fb;
+}
+
+.error-page::before,
+.error-page::after {
+  position: absolute;
+  z-index: 0;
+  width: 280px;
+  height: 280px;
+  border: 1px solid rgb(22 143 130 / 8%);
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+
+.error-page::before {
+  top: 22%;
+  left: -180px;
+}
+
+.error-page::after {
+  right: -170px;
+  bottom: 8%;
+  width: 360px;
+  height: 360px;
+}
+
+.error-page-toolbar,
+.error-card {
+  position: relative;
+  z-index: 1;
+}
+
+.error-page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.error-page-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #203449;
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+  text-decoration: none;
+}
+
+.error-page-brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(145deg, #22ad98, #08786f);
+  box-shadow: 0 5px 12px rgb(12 126 112 / 22%);
+}
+
+.error-page-brand-mark svg {
+  width: 24px;
+  height: 24px;
+}
+
+.error-card {
+  width: min(100%, 550px);
+  margin: auto;
+  padding: 22px 20px 12px;
+  text-align: center;
+}
+
+.error-illustration {
+  position: relative;
+  display: grid;
+  width: 176px;
+  height: 176px;
+  margin: 0 auto 16px;
+  place-items: center;
+}
+
+.error-illustration-ring {
+  position: absolute;
+  border: 1px solid rgb(22 143 130 / 11%);
+  border-radius: 50%;
+}
+
+.error-illustration-ring--outer {
+  inset: 0;
+}
+
+.error-illustration-ring--inner {
+  inset: 17px;
+  border-color: rgb(22 143 130 / 15%);
+}
+
+.error-illustration-icon {
+  display: grid;
+  width: 94px;
+  height: 94px;
+  place-items: center;
+  border: 1px solid #d4eee8;
+  border-radius: 28px;
+  color: #168f82;
+  background: linear-gradient(145deg, #fff, #e9f8f4);
+  box-shadow: 0 15px 40px rgb(26 111 104 / 12%);
+  transform: rotate(-5deg);
+}
+
+.error-illustration-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.error-spark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38b9a4;
+  box-shadow: 0 0 0 5px rgb(56 185 164 / 11%);
+}
+
+.error-spark--one {
+  top: 28px;
+  right: 20px;
+}
+
+.error-spark--two {
+  bottom: 36px;
+  left: 12px;
+  width: 6px;
+  height: 6px;
+}
+
+.error-spark--three {
+  right: 4px;
+  bottom: 48px;
+  width: 5px;
+  height: 5px;
+}
+
+.error-code {
+  margin: 0 0 10px;
+  color: #168f82;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 1.7px;
+}
+
+.error-card h1 {
+  margin: 0;
+  color: #1c2b3d;
+  font-size: clamp(30px, 5vw, 39px);
+  font-weight: 720;
+  letter-spacing: -1.4px;
+  line-height: 1.18;
+}
+
+.error-description {
+  max-width: 440px;
+  margin: 15px auto 0;
+  color: #66758a;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  margin-top: 28px;
+}
+
+.error-retry-button,
+.error-home-link {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 19px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.error-retry-button {
+  color: #fff;
+  background: #168f82;
+  box-shadow: 0 5px 12px rgb(22 143 130 / 19%);
+  cursor: pointer;
+}
+
+.error-retry-button:hover {
+  background: #0c7b70;
+  box-shadow: 0 7px 16px rgb(22 143 130 / 26%);
+  transform: translateY(-1px);
+}
+
+.error-retry-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.error-home-link {
+  border-color: #dce4eb;
+  color: #40516a;
+  background: rgb(255 255 255 / 72%);
+}
+
+.error-home-link:hover {
+  border-color: #a8cfc8;
+  background: #fff;
+}
+
+.error-home-link span {
+  color: #168f82;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.error-retry-button:focus-visible,
+.error-home-link:focus-visible,
+.error-page-brand:focus-visible {
+  outline: 3px solid #42bfa8;
+  outline-offset: 3px;
+}
+
+.error-footer-note {
+  max-width: 400px;
+  margin: 34px auto 0;
+  color: #8a96a7;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+html[data-theme='dark'] .error-page {
+  color: #e2e8f0;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgb(16 106 97 / 20%), transparent 42%),
+    #101827;
+}
+
+html[data-theme='dark'] .error-page::before,
+html[data-theme='dark'] .error-page::after {
+  border-color: rgb(74 188 169 / 10%);
+}
+
+html[data-theme='dark'] .error-page-brand,
+html[data-theme='dark'] .error-card h1 {
+  color: #e7eef5;
+}
+
+html[data-theme='dark'] .error-illustration-ring {
+  border-color: rgb(74 188 169 / 15%);
+}
+
+html[data-theme='dark'] .error-illustration-icon {
+  border-color: #28564f;
+  color: #6bd6c1;
+  background: linear-gradient(145deg, #223c42, #172c34);
+  box-shadow: 0 15px 40px rgb(0 0 0 / 22%);
+}
+
+html[data-theme='dark'] .error-description {
+  color: #a7b4c5;
+}
+
+html[data-theme='dark'] .error-home-link {
+  border-color: #3a4a5c;
+  color: #d8e1eb;
+  background: rgb(27 39 56 / 76%);
+}
+
+html[data-theme='dark'] .error-home-link:hover {
+  border-color: #597a7a;
+  background: #1b2738;
+}
+
+html[data-theme='dark'] .error-footer-note {
+  color: #8290a3;
+}
+
+@media (max-width: 520px) {
+  .error-page {
+    padding: 18px 18px 24px;
+  }
+
+  .error-card {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .error-illustration {
+    width: 148px;
+    height: 148px;
+  }
+
+  .error-illustration-icon {
+    width: 82px;
+    height: 82px;
+    border-radius: 24px;
+  }
+
+  .error-illustration-ring--inner {
+    inset: 14px;
+  }
+
+  .error-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .error-retry-button,
+  .error-home-link {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-retry-button,
+  .error-home-link {
+    transition: none;
+  }
+}
