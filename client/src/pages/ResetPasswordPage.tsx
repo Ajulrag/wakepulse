@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ApiRequestError } from '../api/request'
 import { resetPassword } from '../api/auth'
 import { AuthShowcase } from '../components/auth/AuthShowcase'
+import { BrandLogo } from '../components/BrandLogo'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 export function ResetPasswordPage() {
@@ -51,6 +52,7 @@ export function ResetPasswordPage() {
       <section className="auth-shell" aria-label="Choose a new WakePulse password">
         <div className="auth-form-panel">
           <ThemeToggle />
+          <BrandLogo className="auth-brand-logo" />
           <div className="auth-heading">
             <p className="auth-eyebrow"><span />Account recovery</p>
             <h1 id="reset-password-title">

@@ -50,15 +50,7 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
       <aside className="sidebar" aria-label="Main navigation">
         <Link className="brand" to="/dashboard" aria-label="WakePulse dashboard">
           <span className="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-              <path
-                d="M4 17h6l3.2-8 5.1 15 3.1-7H28"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2.5"
-              />
-            </svg>
+            <img src="/Logo_Round.png" alt="" />
           </span>
           <span className="brand-name">wakepulse</span>
         </Link>

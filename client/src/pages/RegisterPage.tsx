@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError } from '../api/request'
 import { AuthShowcase } from '../components/auth/AuthShowcase'
+import { BrandLogo } from '../components/BrandLogo'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useAuth } from '../context/useAuth'
 
@@ -141,6 +142,7 @@ export function RegisterPage() {
       <section className="auth-shell" aria-label="Create a WakePulse account">
         <div className="auth-form-panel">
           <ThemeToggle />
+          <BrandLogo className="auth-brand-logo" />
           <div className="auth-heading">
             <p className="auth-eyebrow"><span />Service monitoring</p>
             <h1 id="register-title">Create your account</h1>

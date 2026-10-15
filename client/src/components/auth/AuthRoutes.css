@@ -42,6 +42,17 @@
   margin: 0 0 28px;
 }
 
+.auth-brand-logo {
+  display: block;
+  width: min(100%, 220px);
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+  margin: 0 0 18px;
+}
+
 .auth-eyebrow {
   display: inline-flex;
   min-height: 23px;

@@ -63,18 +63,20 @@
 
 .error-page-brand-mark {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   place-items: center;
-  border-radius: 10px;
-  color: #fff;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgb(12 126 112 / 22%);
   background: linear-gradient(145deg, #22ad98, #08786f);
-  box-shadow: 0 5px 12px rgb(12 126 112 / 22%);
 }
 
-.error-page-brand-mark svg {
-  width: 24px;
-  height: 24px;
+.error-page-brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .error-card {
