@@ -6,5 +6,7 @@ server/dist
 .gitignore
 .env
 .env.*
+**/.env
+**/.env.*
 Dockerfile
 **/.DS_Store

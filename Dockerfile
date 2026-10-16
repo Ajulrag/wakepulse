@@ -25,8 +25,12 @@ COPY --from=builder /app/server/package.json ./server/package.json
 COPY --from=builder /app/server/node_modules ./server/node_modules
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/server/src ./server/src
-COPY --from=builder /app/server/.env.example ./server/.env.example
 
 EXPOSE 5000
 
 CMD ["node", "server/dist/server.js"]
+
+FROM nginx:1.27-alpine AS web
+
+COPY --from=builder /app/client/dist /usr/share/nginx/html
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
