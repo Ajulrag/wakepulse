@@ -39,11 +39,52 @@ export async function getDashboardHistoryController(
     return;
   }
 
+  const rawStatus = req.query.status;
+  const status = rawStatus === undefined ? "all" : rawStatus;
+  if (
+    status !== "all" &&
+    status !== "success" &&
+    status !== "failed" &&
+    status !== "timeout" &&
+    status !== "error"
+  ) {
+    res.status(400).json({
+      success: false,
+      message: "History status filter is invalid",
+    });
+    return;
+  }
+
+  const rawSearch = req.query.search;
+  if (typeof rawSearch !== "undefined" && typeof rawSearch !== "string") {
+    res.status(400).json({
+      success: false,
+      message: "History search is invalid",
+    });
+    return;
+  }
+
+  const rawSort = req.query.sort;
+  const sort =
+    rawSort === undefined
+      ? "newest"
+      : rawSort;
+  if (sort !== "newest" && sort !== "oldest") {
+    res.status(400).json({
+      success: false,
+      message: "History sort is invalid",
+    });
+    return;
+  }
+
   try {
     const history = await getDashboardHistory(
       req.auth.sub,
       limit,
       rawCursor,
+      status,
+      typeof rawSearch === "string" ? rawSearch : "",
+      sort,
     );
 
     res.status(200).json({

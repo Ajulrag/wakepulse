@@ -71,4 +71,5 @@ export interface DashboardOverviewResponse {
 export interface DashboardHistoryPage {
   items: DashboardActivityItem[]
   nextCursor: string | null
+  total: number
 }

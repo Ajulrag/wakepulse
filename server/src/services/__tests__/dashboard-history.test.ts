@@ -26,7 +26,9 @@ describe("monitoring history pagination", () => {
     const secondId = new ObjectId();
     const serviceId = new ObjectId();
     const checkedAt = new Date("2026-01-02T03:04:05.000Z");
-    mockToArray.mockResolvedValueOnce([
+    mockToArray
+      .mockResolvedValueOnce([{ total: 2 }])
+      .mockResolvedValueOnce([
       {
         _id: firstId,
         serviceId,
@@ -47,7 +49,7 @@ describe("monitoring history pagination", () => {
         error: "HTTP 503",
         checkedAt,
       },
-    ]);
+      ]);
 
     const page = await getDashboardHistory(
       "507f1f77bcf86cd799439011",
@@ -69,7 +71,9 @@ describe("monitoring history pagination", () => {
     const checkId = new ObjectId();
     const serviceId = new ObjectId();
     const checkedAt = new Date("2026-01-02T03:04:05.000Z");
-    mockToArray.mockResolvedValueOnce([
+    mockToArray
+      .mockResolvedValueOnce([{ total: 1 }])
+      .mockResolvedValueOnce([
       {
         _id: checkId,
         serviceId,
@@ -80,7 +84,7 @@ describe("monitoring history pagination", () => {
         error: null,
         checkedAt,
       },
-    ]);
+      ]);
     const cursor = Buffer.from(
       JSON.stringify({
         checkedAt: checkedAt.toISOString(),
@@ -96,15 +100,16 @@ describe("monitoring history pagination", () => {
 
     expect(page.items).toHaveLength(1);
     expect(page.nextCursor).toBeNull();
-    const pipeline = mockAggregate.mock.calls[0]?.[0] as Array<
+    const pipeline = mockAggregate.mock.calls[1]?.[0] as Array<
       Record<string, unknown>
     >;
-    expect(pipeline[0]?.$match).toEqual({
-      userId: expect.any(ObjectId),
-      $or: [
-        { checkedAt: { $lt: checkedAt } },
-        { checkedAt, _id: { $lt: checkId } },
-      ],
+    expect(pipeline).toContainEqual({
+      $match: {
+        $or: [
+          { checkedAt: { $lt: checkedAt } },
+          { checkedAt, _id: { $lt: checkId } },
+        ],
+      },
     });
   });
 

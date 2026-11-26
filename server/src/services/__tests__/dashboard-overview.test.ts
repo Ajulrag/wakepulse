@@ -110,7 +110,7 @@ describe("getDashboardOverview", () => {
 
     expect(mocks.getDashboardSummary).toHaveBeenCalledWith("user-456");
     expect(mocks.getDashboardStats).toHaveBeenCalledWith("user-456");
-    expect(mocks.getDashboardActivity).toHaveBeenCalledWith("user-456");
+    expect(mocks.getDashboardActivity).toHaveBeenCalledWith("user-456", 100);
     expect(mocks.getDashboardUpcoming).toHaveBeenCalledWith("user-456");
   });
 

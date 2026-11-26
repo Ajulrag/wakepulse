@@ -34,7 +34,8 @@ function isHistoryPage(value: unknown): value is DashboardHistoryPage {
     isRecord(value) &&
     Array.isArray(value.items) &&
     value.items.every(isHistoryItem) &&
-    (typeof value.nextCursor === 'string' || value.nextCursor === null)
+    (typeof value.nextCursor === 'string' || value.nextCursor === null) &&
+    typeof value.total === 'number'
   )
 }
 
@@ -42,11 +43,21 @@ export async function getMonitoringHistory(
   limit = 20,
   cursor?: string,
   signal?: AbortSignal,
+  status: 'all' | DashboardCheckStatus = 'all',
+  searchTerm = '',
+  sort: 'newest' | 'oldest' = 'newest',
 ): Promise<DashboardHistoryPage> {
   const search = new URLSearchParams({ limit: String(limit) })
   if (cursor) {
     search.set('cursor', cursor)
   }
+  if (status !== 'all') {
+    search.set('status', status)
+  }
+  if (searchTerm.trim()) {
+    search.set('search', searchTerm.trim())
+  }
+  search.set('sort', sort)
 
   const payload = await requestJson(`/api/dashboard/history?${search}`, {
     method: 'GET',

@@ -1362,11 +1362,18 @@ export function ServicesPage() {
                                 }
                                 aria-describedby={actionError ? errorId : undefined}
                               >
-                                {isUpdating
-                                  ? 'Updating…'
-                                  : isDeletionPending
-                                    ? 'Deleting…'
-                                    : actionLabel}
+                                {isUpdating || isDeletionPending ? (
+                                  <svg className="services-action-spinner" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <circle cx="10" cy="10" r="6" />
+                                  </svg>
+                                ) : (
+                                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    {service.enabled ? <path d="M4 10h12M10 4l-6 6 6 6" /> : <path d="M16 10H4m6-6 6 6-6 6" />}
+                                  </svg>
+                                )}
+                                <span className="visually-hidden">
+                                  {isUpdating ? 'Updating…' : isDeletionPending ? 'Deleting…' : actionLabel}
+                                </span>
                               </button>
                             </div>
                             {actionError && (
@@ -1426,11 +1433,18 @@ export function ServicesPage() {
                                     : 'Enable monitoring before running a manual check.'
                                 }
                               >
-                                {isPingPending
-                                  ? 'Checking…'
-                                  : service.enabled
-                                    ? 'Ping now'
-                                    : 'Enable to ping'}
+                                {isPingPending ? (
+                                  <svg className="services-action-spinner" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <circle cx="10" cy="10" r="6" />
+                                  </svg>
+                                ) : (
+                                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <path d="M3 10h3l2-4 4 8 2-4h3" />
+                                  </svg>
+                                )}
+                                <span className="visually-hidden">
+                                  {isPingPending ? 'Checking…' : service.enabled ? `Ping ${service.name} now` : 'Enable monitoring before ping'}
+                                </span>
                               </button>
                               <button
                                 className="services-edit-button"
@@ -1448,7 +1462,11 @@ export function ServicesPage() {
                                   openEditServiceDialog(service, event.currentTarget)
                                 }
                               >
-                                Edit
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                  <path d="M4 14.5V16h1.5l8.8-8.8-1.5-1.5L4 14.5Z" />
+                                  <path d="m13.8 4.7 1.5 1.5" />
+                                </svg>
+                                <span className="visually-hidden">Edit {service.name}</span>
                               </button>
                               <button
                                 className="services-delete-button"
@@ -1466,7 +1484,10 @@ export function ServicesPage() {
                                   openDeleteDialog(service, event.currentTarget)
                                 }
                               >
-                                Delete
+                                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                  <path d="M4 6h12M8 6V4h4v2m-6 0 1 10h6l1-10" />
+                                </svg>
+                                <span className="visually-hidden">Delete {service.name}</span>
                               </button>
                             </div>
                             {!service.enabled && (

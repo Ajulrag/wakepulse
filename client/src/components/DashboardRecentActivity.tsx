@@ -2,6 +2,7 @@ import type {
   DashboardActivityItem,
   DashboardCheckStatus,
 } from '../types/dashboard'
+import { useMemo, useState } from 'react'
 
 interface DashboardRecentActivityProps {
   activity: DashboardActivityItem[]
@@ -100,6 +101,12 @@ function ActivityItem({ item }: { item: DashboardActivityItem }) {
 export function DashboardRecentActivity({
   activity,
 }: DashboardRecentActivityProps) {
+  const [pageSize, setPageSize] = useState(10)
+  const visibleActivity = useMemo(
+    () => activity.slice(0, pageSize),
+    [activity, pageSize],
+  )
+
   return (
     <section className="dashboard-panel activity-panel" aria-labelledby="recent-activity-title">
       <div className="panel-heading">
@@ -107,7 +114,19 @@ export function DashboardRecentActivity({
           <h2 id="recent-activity-title">Recent activity</h2>
           <p>The latest checks across your services.</p>
         </div>
-        <span className="activity-window-label">Latest checks</span>
+        <div className="activity-list-controls">
+          <span>Show</span>
+          <select
+            aria-label="Recent activity result count"
+            value={pageSize}
+            onChange={(event) => setPageSize(Number(event.currentTarget.value))}
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
 
       {activity.length === 0 ? (
@@ -121,11 +140,16 @@ export function DashboardRecentActivity({
           <p>Monitoring activity will appear here when services are checked.</p>
         </div>
       ) : (
-        <ol className="activity-list" aria-label="Recent monitoring checks">
-          {activity.map((item) => (
-            <ActivityItem item={item} key={item.id} />
-          ))}
-        </ol>
+        <>
+          <ol className="activity-list" aria-label="Recent monitoring checks">
+            {visibleActivity.map((item) => (
+              <ActivityItem item={item} key={item.id} />
+            ))}
+          </ol>
+          <div className="activity-list-footer" aria-live="polite">
+            Showing {visibleActivity.length} of {activity.length} recent checks
+          </div>
+        </>
       )}
     </section>
   )

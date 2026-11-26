@@ -31,7 +31,7 @@ export async function getDashboardOverview(
   const [summary, stats, activity, upcoming] = await Promise.all([
     getDashboardSummary(userId),
     getDashboardStats(userId),
-    getDashboardActivity(userId),
+    getDashboardActivity(userId, 100),
     getDashboardUpcoming(userId),
   ]);
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { DashboardApiError, getDashboardOverview } from '../api/dashboard'
 import { AppLayout } from '../components/AppLayout'
 import { useAuth } from '../context/useAuth'
@@ -112,10 +113,15 @@ export function DashboardPage() {
                 Keep an eye on service health, recent checks, and what is coming up.
               </p>
             </div>
-            <div className="heading-decoration" aria-hidden="true">
-              <span className="decoration-orbit decoration-orbit--outer" />
-              <span className="decoration-orbit decoration-orbit--inner" />
-              <span className="decoration-core" />
+            <div className="dashboard-heading-actions">
+              <span className="dashboard-live-state">
+                <span aria-hidden="true" />
+                Workspace live
+              </span>
+              <Link className="dashboard-add-service" to="/services">
+                Manage services
+                <span aria-hidden="true">→</span>
+              </Link>
             </div>
           </section>
 
@@ -160,10 +166,16 @@ export function DashboardPage() {
               <>
                 <DashboardSummaryCards summary={requestState.dashboard.summary} />
                 {requestState.dashboard.summary.totalServices === 0 && (
-                  <p className="zero-services-note" role="status">
-                    No services are configured yet. Service health and check history
-                    will appear here once a service is configured.
-                  </p>
+                  <div className="dashboard-zero-state" role="status">
+                    <div>
+                      <strong>Start monitoring your first service</strong>
+                      <p>Add an endpoint, check interval, and timeout to begin collecting health data.</p>
+                    </div>
+                    <Link className="dashboard-empty-action" to="/services">
+                      Add your first service
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 )}
               </>
             )}
@@ -177,17 +189,17 @@ export function DashboardPage() {
             <DashboardMonitoringStatistics stats={requestState.dashboard.stats} />
           )}
 
-          {requestState.status === 'loading' && <DashboardRecentActivitySkeleton />}
+          <div className="dashboard-detail-grid">
+            {requestState.status === 'loading' && <DashboardRecentActivitySkeleton />}
+            {requestState.status === 'success' && (
+              <DashboardRecentActivity activity={requestState.dashboard.activity} />
+            )}
 
-          {requestState.status === 'success' && (
-            <DashboardRecentActivity activity={requestState.dashboard.activity} />
-          )}
-
-          {requestState.status === 'loading' && <DashboardUpcomingChecksSkeleton />}
-
-          {requestState.status === 'success' && (
-            <DashboardUpcomingChecks upcoming={requestState.dashboard.upcoming} />
-          )}
+            {requestState.status === 'loading' && <DashboardUpcomingChecksSkeleton />}
+            {requestState.status === 'success' && (
+              <DashboardUpcomingChecks upcoming={requestState.dashboard.upcoming} />
+            )}
+          </div>
       </div>
     </AppLayout>
   )

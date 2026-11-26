@@ -15,6 +15,7 @@ export interface DashboardActivityItem {
 export interface DashboardHistoryPage {
   items: DashboardActivityItem[];
   nextCursor: string | null;
+  total: number;
 }
 
 interface ActivityCursor {
@@ -73,6 +74,10 @@ function encodeCursor(item: {
   ).toString("base64url");
 }
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function getDashboardActivity(
   userId: string,
   limit = 10,
@@ -83,7 +88,7 @@ export async function getDashboardActivity(
 
   const userObjectId = new ObjectId(userId);
 
-  const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 50);
+  const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 100);
 
   const activity = await checkLogsCollection()
     .aggregate<{
@@ -156,6 +161,9 @@ export async function getDashboardHistory(
   userId: string,
   limit = 20,
   cursor?: string,
+  status?: DashboardActivityItem["status"] | "all",
+  search?: string,
+  sort: "newest" | "oldest" = "newest",
 ): Promise<DashboardHistoryPage> {
   if (!ObjectId.isValid(userId)) {
     throw new Error("Invalid user ID");
@@ -163,18 +171,76 @@ export async function getDashboardHistory(
 
   const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 50);
   const cursorValue = cursor ? decodeCursor(cursor) : null;
-  const match: Record<string, unknown> = {
-    userId: new ObjectId(userId),
+  const userObjectId = new ObjectId(userId);
+  const safeStatus = status && status !== "all" ? status : null;
+  const safeSearch = typeof search === "string"
+    ? escapeRegex(search.trim().slice(0, 100))
+    : "";
+  const isNewest = sort !== "oldest";
+
+  const filteredMatch: Record<string, unknown> = {
+    userId: userObjectId,
   };
 
-  if (cursorValue) {
-    match.$or = [
-      { checkedAt: { $lt: cursorValue.checkedAt } },
-      {
-        checkedAt: cursorValue.checkedAt,
-        _id: { $lt: cursorValue.id },
+  if (safeStatus) {
+    filteredMatch.status = safeStatus;
+  }
+
+  const pipelinePrefix: Record<string, unknown>[] = [
+    { $match: filteredMatch },
+    {
+      $lookup: {
+        from: "services",
+        localField: "serviceId",
+        foreignField: "_id",
+        as: "service",
       },
-    ];
+    },
+    {
+      $unwind: {
+        path: "$service",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ];
+
+  if (safeSearch) {
+    pipelinePrefix.push({
+      $match: {
+        $or: [
+          { "service.name": { $regex: safeSearch, $options: "i" } },
+          { status: { $regex: safeSearch, $options: "i" } },
+        ],
+      },
+    });
+  }
+
+  const countPipeline = [
+    ...pipelinePrefix,
+    { $count: "total" },
+  ];
+  const [countResult] = await checkLogsCollection()
+    .aggregate<{ total: number }>(countPipeline)
+    .toArray();
+  const total = countResult?.total ?? 0;
+
+  const paginatedMatch: Record<string, unknown> = {};
+  if (cursorValue) {
+    paginatedMatch.$or = isNewest
+      ? [
+          { checkedAt: { $lt: cursorValue.checkedAt } },
+          {
+            checkedAt: cursorValue.checkedAt,
+            _id: { $lt: cursorValue.id },
+          },
+        ]
+      : [
+          { checkedAt: { $gt: cursorValue.checkedAt } },
+          {
+            checkedAt: cursorValue.checkedAt,
+            _id: { $gt: cursorValue.id },
+          },
+        ];
   }
 
   const results = await checkLogsCollection()
@@ -188,23 +254,14 @@ export async function getDashboardHistory(
       error: string | null;
       checkedAt: Date;
     }>([
-      { $match: match },
-      { $sort: { checkedAt: -1, _id: -1 } },
+      ...pipelinePrefix,
+      ...(cursorValue ? [{ $match: paginatedMatch }] : []),
+      {
+        $sort: isNewest
+          ? { checkedAt: -1, _id: -1 }
+          : { checkedAt: 1, _id: 1 },
+      },
       { $limit: safeLimit + 1 },
-      {
-        $lookup: {
-          from: "services",
-          localField: "serviceId",
-          foreignField: "_id",
-          as: "service",
-        },
-      },
-      {
-        $unwind: {
-          path: "$service",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
       {
         $project: {
           _id: 1,
@@ -238,6 +295,7 @@ export async function getDashboardHistory(
 
   return {
     items,
+    total,
     nextCursor: hasMore && lastItem
       ? encodeCursor({
           id: lastItem._id,
