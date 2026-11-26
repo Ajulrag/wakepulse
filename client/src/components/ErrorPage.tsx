@@ -100,7 +100,7 @@ export function ErrorPage({
               Try again
             </button>
           )}
-          <a className="error-home-link" href="/">
+          <a className="error-home-link" href="/dashboard">
             Return to dashboard
             <span aria-hidden="true">→</span>
           </a>

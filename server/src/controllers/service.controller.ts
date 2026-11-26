@@ -327,6 +327,18 @@ export async function pingServiceController(
       return;
     }
 
+    if (
+      error instanceof Error &&
+      error.message === "SERVICE_CHECK_IN_PROGRESS"
+    ) {
+      res.status(409).json({
+        success: false,
+        message: "A check for this service is already in progress",
+      });
+
+      return;
+    }
+
     console.error("Ping service error:", error);
 
     res.status(500).json({

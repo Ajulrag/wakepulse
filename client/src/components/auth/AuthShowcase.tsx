@@ -3,10 +3,9 @@ export function AuthShowcase() {
     <aside className="auth-showcase" aria-label="WakePulse service monitoring">
       <div className="auth-showcase-topline">
         <span className="auth-status-pill">
-          <span className="auth-status-dot" />
-          Global network active
+          HTTP service monitoring
         </span>
-        <span className="auth-sla">99.99% target SLA</span>
+        <span className="auth-sla">WakePulse</span>
       </div>
 
       <div className="auth-network-art" aria-hidden="true">
@@ -71,17 +70,16 @@ export function AuthShowcase() {
       </div>
 
       <div className="auth-showcase-copy">
-        <h2>Keep your services alive and responsive</h2>
+        <h2>Know when your services respond</h2>
         <p>
-          Automated HTTP health checks, periodic synthetic pings, and real-time
-          uptime monitoring to ensure 100% availability for your cloud workloads
-          and APIs.
+          Schedule HTTP health checks, review response times, and see recent
+          monitoring activity for the services you configure.
         </p>
       </div>
 
       <div className="auth-showcase-footer">
-        <span><span className="auth-status-dot" />Multi-region synthetic ping</span>
-        <span className="auth-mono">Zero Cold Starts</span>
+        <span>Scheduled checks</span>
+        <span className="auth-mono">Response history</span>
       </div>
     </aside>
   )

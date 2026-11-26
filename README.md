@@ -13,16 +13,18 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 - Express.js
 - MongoDB Atlas
 - Docker
+- Docker Compose
+- Caddy (public HTTPS and reverse proxy)
 - Nginx
 - Oracle Cloud
 
 ## Project Structure
 
-- `client` - React frontend
-- `server` - Express backend and scheduler
-- `shared` - Shared TypeScript types
-- `scripts` - Utility scripts
-- `docker` - Deployment configuration
+- `client/` - React frontend, pages, API clients, and UI
+- `server/` - Express API, MongoDB access, authentication, and monitoring scheduler
+- `docker/caddy/` - Public HTTPS reverse proxy configuration
+- `docker/nginx/` - Internal static-site server and API reverse proxy
+- `Dockerfile` and `docker-compose.yml` - Production container build and orchestration
 
 ## Status
 
@@ -36,13 +38,15 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 - Scheduled health monitoring with concurrency-safe polling
 - Dashboard summaries and recent activity views
 - Monitoring history and workspace settings pages
-- Dockerized deployment configuration with MongoDB and Nginx
+- Dockerized deployment configuration using MongoDB Atlas, Nginx, and Caddy-managed HTTPS
 
 ## Deploy to an Ubuntu VPS
 
 The production Compose setup builds the frontend and API images on the VPS,
 connects the API to MongoDB Atlas, and uses Caddy to obtain and renew HTTPS
-certificates automatically. The API is private to the Docker network.
+certificates automatically. Caddy is the public entry point and forwards
+requests through the internal Nginx web container to the API. The API is
+private to the Docker network.
 
 ### Requirements
 

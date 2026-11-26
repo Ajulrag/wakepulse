@@ -67,3 +67,8 @@ export interface DashboardOverview {
 export interface DashboardOverviewResponse {
   dashboard: DashboardOverview
 }
+
+export interface DashboardHistoryPage {
+  items: DashboardActivityItem[]
+  nextCursor: string | null
+}

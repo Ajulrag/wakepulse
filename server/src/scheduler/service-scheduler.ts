@@ -26,7 +26,10 @@ async function runSchedulerCycle(): Promise<void> {
   try {
     const now = new Date();
 
-    const dueServices = await getDueServices(now);
+    const dueServices = await getDueServices(
+      now,
+      SCHEDULER_MAX_CONCURRENCY * 10,
+    );
 
     console.log(
       `WakePulse scheduler found ${dueServices.length} due service(s)`,

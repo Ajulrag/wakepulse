@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { DashboardApiError, getDashboardOverview } from '../api/dashboard'
 import { AppLayout } from '../components/AppLayout'
+import { useAuth } from '../context/useAuth'
+import { loadWorkspacePreferences } from '../preferences'
 import {
   DashboardSummaryCards,
   DashboardSummaryCardsSkeleton,
@@ -26,45 +28,82 @@ type DashboardRequestState =
   | { status: 'error'; message: string; authenticationRequired: boolean }
 
 export function DashboardPage() {
+  const { refreshUser } = useAuth()
+  const [preferences] = useState(loadWorkspacePreferences)
   const [requestState, setRequestState] = useState<DashboardRequestState>({
     status: 'loading',
   })
   const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    const controller = new AbortController()
+    let activeController: AbortController | null = null
 
-    getDashboardOverview(controller.signal)
-      .then((dashboard) => {
-        setRequestState({ status: 'success', dashboard })
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
+    const loadDashboard = () => {
+      activeController?.abort()
+      const controller = new AbortController()
+      activeController = controller
 
-        setRequestState({
-          status: 'error',
-          message:
-            error instanceof DashboardApiError
-              ? error.message
-              : 'Unable to load the dashboard. Please try again.',
-          authenticationRequired:
-            error instanceof DashboardApiError && error.status === 401,
+      getDashboardOverview(controller.signal)
+        .then((dashboard) => {
+          setRequestState({ status: 'success', dashboard })
         })
-      })
+        .catch((error: unknown) => {
+          if (controller.signal.aborted) {
+            return
+          }
 
-    return () => controller.abort()
-  }, [retryCount])
+          const authenticationRequired =
+            error instanceof DashboardApiError && error.status === 401
+          setRequestState({
+            status: 'error',
+            message:
+              error instanceof DashboardApiError
+                ? error.message
+                : 'Unable to load the dashboard. Please try again.',
+            authenticationRequired,
+          })
 
-  const retryDashboard = () => {
+          if (authenticationRequired) {
+            void refreshUser()
+          }
+        })
+    }
+
+    loadDashboard()
+    const refreshTimer = preferences.autoRefresh
+      ? window.setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            loadDashboard()
+          }
+        }, 60_000)
+      : null
+
+    return () => {
+      if (refreshTimer !== null) {
+        window.clearInterval(refreshTimer)
+      }
+      activeController?.abort()
+    }
+  }, [preferences.autoRefresh, refreshUser, retryCount])
+
+  const retryDashboard = async () => {
+    if (
+      requestState.status === 'error' &&
+      requestState.authenticationRequired
+    ) {
+      await refreshUser()
+    }
+
     setRequestState({ status: 'loading' })
     setRetryCount((count) => count + 1)
   }
 
   return (
     <AppLayout activePage="dashboard">
-        <div className="page-content" aria-busy={requestState.status === 'loading'}>
+        <div
+          className={`page-content${preferences.compactCards ? ' page-content--compact' : ''}`}
+          aria-busy={requestState.status === 'loading'}
+        >
           <section className="page-heading" aria-labelledby="page-title">
             <div>
               <p className="eyebrow">OVERVIEW</p>
@@ -108,7 +147,7 @@ export function DashboardPage() {
                 <button
                   className="dashboard-retry-button"
                   type="button"
-                  onClick={retryDashboard}
+                  onClick={() => void retryDashboard()}
                 >
                   {requestState.authenticationRequired
                     ? 'Retry after signing in'

@@ -1,62 +1,32 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AppLayout } from '../components/AppLayout'
 import { useAuth } from '../context/useAuth'
-
-const STORAGE_KEY = 'wakepulse-settings'
-
-type WindowPreset = '24h' | '7d' | '30d'
-
-interface UserSettings {
-  defaultWindow: WindowPreset
-  autoRefresh: boolean
-  compactCards: boolean
-}
-
-const defaultSettings: UserSettings = {
-  defaultWindow: '7d',
-  autoRefresh: true,
-  compactCards: false,
-}
-
-function loadSettings(): UserSettings {
-  if (typeof window === 'undefined') {
-    return defaultSettings
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) {
-      return defaultSettings
-    }
-
-    const parsed = JSON.parse(raw) as Partial<UserSettings>
-    const safeWindow = parsed.defaultWindow === '24h' || parsed.defaultWindow === '7d' || parsed.defaultWindow === '30d'
-      ? parsed.defaultWindow
-      : defaultSettings.defaultWindow
-
-    return {
-      defaultWindow: safeWindow,
-      autoRefresh: parsed.autoRefresh !== false,
-      compactCards: Boolean(parsed.compactCards),
-    }
-  } catch {
-    return defaultSettings
-  }
-}
+import {
+  loadWorkspacePreferences,
+  saveWorkspacePreferences,
+} from '../preferences'
 
 export function SettingsPage() {
   const { state } = useAuth()
-  const [settings, setSettings] = useState<UserSettings>(defaultSettings)
-
-  useEffect(() => {
-    setSettings(loadSettings())
-  }, [])
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-  }, [settings])
+  const [settings, setSettings] = useState(loadWorkspacePreferences)
+  const [persistenceError, setPersistenceError] = useState<string | null>(null)
 
   const account = state.status === 'authenticated' ? state.user : null
+  const updateSettings = (
+    update: Partial<typeof settings>,
+  ) => {
+    const updatedSettings = { ...settings, ...update }
+    setSettings(updatedSettings)
+
+    try {
+      saveWorkspacePreferences(updatedSettings)
+      setPersistenceError(null)
+    } catch {
+      setPersistenceError(
+        'WakePulse could not save this preference in your browser. The current selection will remain active until you leave this page.',
+      )
+    }
+  }
 
   return (
     <AppLayout activePage="settings">
@@ -66,10 +36,17 @@ export function SettingsPage() {
             <p className="eyebrow">WORKSPACE SETTINGS</p>
             <h1 id="settings-title">Preferences</h1>
             <p className="page-description">
-              Configure how WakePulse presents your monitoring dashboard and refresh data.
+              Configure how WakePulse presents monitoring data. Preferences are
+              stored in this browser.
             </p>
           </div>
         </section>
+
+        {persistenceError && (
+          <p className="settings-save-error" role="alert">
+            {persistenceError}
+          </p>
+        )}
 
         <section className="dashboard-panel settings-panel" aria-labelledby="settings-account-heading">
           <div className="summary-section-heading">
@@ -111,8 +88,10 @@ export function SettingsPage() {
               id="default-window"
               value={settings.defaultWindow}
               onChange={(event) => {
-                const value = event.target.value as WindowPreset
-                setSettings((current) => ({ ...current, defaultWindow: value }))
+                const value = event.target.value
+                if (value === '24h' || value === '7d' || value === '30d') {
+                  updateSettings({ defaultWindow: value })
+                }
               }}
             >
               <option value="24h">Last 24 hours</option>
@@ -123,19 +102,16 @@ export function SettingsPage() {
 
           <div className="settings-toggle-row">
             <div>
-              <strong>Auto-refresh dashboard</strong>
+              <strong id="auto-refresh-label">Auto-refresh dashboard</strong>
               <p>Update service status cards automatically while the page stays open.</p>
             </div>
             <label className="settings-switch">
               <input
+                id="auto-refresh"
                 type="checkbox"
                 checked={settings.autoRefresh}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    autoRefresh: event.target.checked,
-                  }))
-                }
+                aria-labelledby="auto-refresh-label"
+                onChange={(event) => updateSettings({ autoRefresh: event.target.checked })}
               />
               <span className="settings-slider" aria-hidden="true" />
             </label>
@@ -143,19 +119,16 @@ export function SettingsPage() {
 
           <div className="settings-toggle-row">
             <div>
-              <strong>Compact cards</strong>
+              <strong id="compact-cards-label">Compact cards</strong>
               <p>Reduce card padding for a denser dashboard overview.</p>
             </div>
             <label className="settings-switch">
               <input
+                id="compact-cards"
                 type="checkbox"
                 checked={settings.compactCards}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    compactCards: event.target.checked,
-                  }))
-                }
+                aria-labelledby="compact-cards-label"
+                onChange={(event) => updateSettings({ compactCards: event.target.checked })}
               />
               <span className="settings-slider" aria-hidden="true" />
             </label>

@@ -5,7 +5,10 @@ import {
   checkLogsCollection,
 } from "../config/collections.js";
 
-import type { ServiceDocument } from "../types/database.js";
+import type {
+  CheckLogDocument,
+  ServiceDocument,
+} from "../types/database.js";
 
 import type {
   CreateServiceInput,
@@ -13,12 +16,13 @@ import type {
 } from "../validation/service.js";
 
 import { checkHttpEndpoint } from "../utils/http-checker.js";
-import { calculateServiceMetrics } from "../utils/service-metrics.js";
 
 export type MonitoringWindow =
   | "24h"
   | "7d"
   | "30d";
+
+const inFlightServiceChecks = new Set<string>();
 
 function getMonitoringWindowStart(
   window: MonitoringWindow,
@@ -207,7 +211,7 @@ export async function deleteService(
   return result.deletedCount === 1;
 }
 
-export async function pingService(
+async function runServiceCheck(
   userId: string,
   serviceId: string,
 ): Promise<{
@@ -316,6 +320,30 @@ export async function pingService(
   };
 }
 
+export async function pingService(
+  userId: string,
+  serviceId: string,
+): Promise<Awaited<ReturnType<typeof runServiceCheck>>> {
+  if (
+    !ObjectId.isValid(userId) ||
+    !ObjectId.isValid(serviceId)
+  ) {
+    return null;
+  }
+
+  if (inFlightServiceChecks.has(serviceId)) {
+    throw new Error("SERVICE_CHECK_IN_PROGRESS");
+  }
+
+  inFlightServiceChecks.add(serviceId);
+
+  try {
+    return await runServiceCheck(userId, serviceId);
+  } finally {
+    inFlightServiceChecks.delete(serviceId);
+  }
+}
+
 export async function getServiceCheckHistory(
   userId: string,
   serviceId: string,
@@ -383,22 +411,103 @@ export async function getServiceSummary(
   const windowStart =
     getMonitoringWindowStart(window);
 
-  const checks = await checkLogsCollection()
-    .find({
-      serviceId: new ObjectId(serviceId),
-      userId: new ObjectId(userId),
-      checkedAt: {
-        $gte: windowStart,
+  const [aggregated] = await checkLogsCollection()
+    .aggregate<{
+      totalChecks: number;
+      successfulChecks: number;
+      averageResponseTime: number | null;
+      minimumResponseTime: number | null;
+      maximumResponseTime: number | null;
+      latestCheck: {
+        id: ObjectId;
+        status: CheckLogDocument["status"];
+        statusCode: number | null;
+        responseTime: number | null;
+        error: string | null;
+        checkedAt: Date;
+      };
+    }>([
+      {
+        $match: {
+          serviceId: new ObjectId(serviceId),
+          userId: new ObjectId(userId),
+          checkedAt: {
+            $gte: windowStart,
+          },
+        },
       },
-    })
-    .sort({
-      checkedAt: -1,
-    })
+      {
+        $set: {
+          responseTimeForMetrics: {
+            $cond: [
+              { $isNumber: "$responseTime" },
+              "$responseTime",
+              "$$REMOVE",
+            ],
+          },
+        },
+      },
+      {
+        $sort: {
+          checkedAt: -1,
+          _id: -1,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalChecks: { $sum: 1 },
+          successfulChecks: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "success"] }, 1, 0],
+            },
+          },
+          averageResponseTime: { $avg: "$responseTimeForMetrics" },
+          minimumResponseTime: { $min: "$responseTimeForMetrics" },
+          maximumResponseTime: { $max: "$responseTimeForMetrics" },
+          latestCheck: {
+            $first: {
+              id: "$_id",
+              status: "$status",
+              statusCode: "$statusCode",
+              responseTime: "$responseTime",
+              error: "$error",
+              checkedAt: "$checkedAt",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalChecks: 1,
+          successfulChecks: 1,
+          averageResponseTime: 1,
+          minimumResponseTime: 1,
+          maximumResponseTime: 1,
+          latestCheck: 1,
+        },
+      },
+    ])
     .toArray();
 
-  const metrics = calculateServiceMetrics(checks);
-
-  const latestCheck = checks[0] ?? null;
+  const totalChecks = aggregated?.totalChecks ?? 0;
+  const successfulChecks = aggregated?.successfulChecks ?? 0;
+  const metrics = {
+    totalChecks,
+    successfulChecks,
+    failedChecks: totalChecks - successfulChecks,
+    uptimePercentage:
+      totalChecks > 0
+        ? Number(((successfulChecks / totalChecks) * 100).toFixed(2))
+        : 0,
+    averageResponseTime:
+      aggregated?.averageResponseTime == null
+        ? null
+        : Math.round(aggregated.averageResponseTime),
+    minimumResponseTime: aggregated?.minimumResponseTime ?? null,
+    maximumResponseTime: aggregated?.maximumResponseTime ?? null,
+  };
 
   return {
     service: {
@@ -416,14 +525,14 @@ export async function getServiceSummary(
       window,
       ...metrics,
     },
-    latestCheck: latestCheck
+    latestCheck: aggregated?.latestCheck
       ? {
-          id: latestCheck._id!.toString(),
-          status: latestCheck.status,
-          statusCode: latestCheck.statusCode,
-          responseTime: latestCheck.responseTime,
-          error: latestCheck.error,
-          checkedAt: latestCheck.checkedAt,
+          id: aggregated.latestCheck.id.toString(),
+          status: aggregated.latestCheck.status,
+          statusCode: aggregated.latestCheck.statusCode,
+          responseTime: aggregated.latestCheck.responseTime,
+          error: aggregated.latestCheck.error,
+          checkedAt: aggregated.latestCheck.checkedAt,
         }
       : null,
   };
@@ -431,6 +540,7 @@ export async function getServiceSummary(
 
 export async function getDueServices(
   now = new Date(),
+  limit = 100,
 ): Promise<ServiceDocument[]> {
   return servicesCollection()
     .find({
@@ -443,5 +553,6 @@ export async function getDueServices(
     .sort({
       nextCheckAt: 1,
     })
+    .limit(Math.max(1, Math.floor(limit)))
     .toArray();
 }

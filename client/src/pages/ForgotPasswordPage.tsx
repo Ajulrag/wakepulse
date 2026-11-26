@@ -103,11 +103,6 @@ export function ForgotPasswordPage() {
           <p className="auth-login-register">
             Remembered your password? <Link to="/login">Back to sign in</Link>
           </p>
-          <div className="auth-trust-row">
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1 5 2v4c0 3.2-2.2 5.8-5 7-2.8-1.2-5-3.8-5-7V3l5-2Zm-2 6 1.4 1.5L10.5 5" /></svg>SOC 2 Type II Certified</span>
-            <i />
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="m5.3 8 1.8 1.8 3.7-4" /></svg>99.99% Uptime SLA</span>
-          </div>
         </div>
         <AuthShowcase />
       </section>

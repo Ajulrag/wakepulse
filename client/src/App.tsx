@@ -6,7 +6,6 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom'
-import { BACKEND_ERROR_EVENT } from './api/request'
 import { RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
@@ -21,6 +20,7 @@ import { HistoryPage } from './pages/HistoryPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ThemeToggle } from './components/ThemeToggle'
 import { ErrorPage } from './components/ErrorPage'
+import { LandingPage } from './pages/LandingPage'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
@@ -68,29 +68,24 @@ function PublicOnly() {
 }
 
 export default function App() {
-  const [errorVariant, setErrorVariant] = useState<
-    'backend' | 'application' | null
-  >(null)
+  const [applicationError, setApplicationError] = useState(false)
 
   useEffect(() => {
-    const handleBackendError = () => setErrorVariant('backend')
-    const handleUnexpectedError = () => setErrorVariant('application')
+    const handleUnexpectedError = () => setApplicationError(true)
 
-    window.addEventListener(BACKEND_ERROR_EVENT, handleBackendError)
     window.addEventListener('error', handleUnexpectedError)
     window.addEventListener('unhandledrejection', handleUnexpectedError)
 
     return () => {
-      window.removeEventListener(BACKEND_ERROR_EVENT, handleBackendError)
       window.removeEventListener('error', handleUnexpectedError)
       window.removeEventListener('unhandledrejection', handleUnexpectedError)
     }
   }, [])
 
-  if (errorVariant) {
+  if (applicationError) {
     return (
       <ErrorPage
-        variant={errorVariant}
+        variant="application"
         onRetry={() => window.location.reload()}
       />
     )
@@ -98,6 +93,8 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+
       <Route element={<PublicOnly />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -106,7 +103,6 @@ export default function App() {
       </Route>
 
       <Route element={<RequireAuth />}>
-        <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="services" element={<ServicesPage />} />
         <Route path="services/:serviceId" element={<ServiceDetailsPage />} />

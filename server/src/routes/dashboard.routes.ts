@@ -5,12 +5,14 @@ import { getDashboardStatsController } from "../controllers/dashboard-stats.cont
 import { getDashboardActivityController } from "../controllers/dashboard-activity.controller.js";
 import { getDashboardUpcomingController } from "../controllers/dashboard-upcoming.controller.js";
 import { getDashboardOverviewController } from "../controllers/dashboard-overview.controller.js";
+import { getDashboardHistoryController } from "../controllers/dashboard-history.controller.js";
 
 const router = Router();
 
 router.get("/summary", requireAuth, getDashboardSummaryController);
 router.get("/stats", requireAuth, getDashboardStatsController);
 router.get("/activity", requireAuth, getDashboardActivityController);
+router.get("/history", requireAuth, getDashboardHistoryController);
 router.get("/upcoming", requireAuth, getDashboardUpcomingController);
 router.get("/overview", requireAuth, getDashboardOverviewController);
 

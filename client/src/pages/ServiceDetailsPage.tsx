@@ -4,6 +4,10 @@ import { getServiceDetails, getServiceSummary } from '../api/service-details'
 import { ApiRequestError } from '../api/request'
 import { AppLayout } from '../components/AppLayout'
 import { useAuth } from '../context/useAuth'
+import {
+  loadWorkspacePreferences,
+  type MonitoringWindow,
+} from '../preferences'
 import type { MonitoredService, ServiceStatus, ServiceSummaryResponse } from '../types/service'
 
 type ServiceDetailsState =
@@ -19,6 +23,8 @@ const serviceStatusLabels: Record<ServiceStatus, string> = {
   offline: 'Offline',
   disabled: 'Disabled',
 }
+
+type StatsWindow = MonitoringWindow
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',
@@ -182,14 +188,26 @@ export function ServiceDetailsPage() {
     retry()
   }
 
-  // 2M.3 — Monitoring statistics
-  type StatsWindow = '24h' | '7d' | '30d'
-  const [statsWindow, setStatsWindow] = useState<StatsWindow>('7d')
+  const [statsWindow, setStatsWindow] = useState<StatsWindow>(
+    () => loadWorkspacePreferences().defaultWindow,
+  )
+  const [statsRetryCount, setStatsRetryCount] = useState(0)
   const [statsState, setStatsState] = useState<
     | { status: 'idle' }
-    | { status: 'loading' }
-    | { status: 'success'; data: ServiceSummaryResponse['summary'] }
-    | { status: 'error'; message: string }
+    | {
+        status: 'success'
+        serviceId: string
+        window: StatsWindow
+        retryCount: number
+        data: ServiceSummaryResponse['summary']
+      }
+    | {
+        status: 'error'
+        serviceId: string
+        window: StatsWindow
+        retryCount: number
+        message: string
+      }
   >({ status: 'idle' })
 
   useEffect(() => {
@@ -197,22 +215,43 @@ export function ServiceDetailsPage() {
       return
     }
     const controller = new AbortController()
-    setStatsState({ status: 'loading' })
     getServiceSummary(serviceId, statsWindow, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) {
-          setStatsState({ status: 'success', data })
+          setStatsState({
+            status: 'success',
+            serviceId,
+            window: statsWindow,
+            retryCount: statsRetryCount,
+            data,
+          })
         }
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return
         const msg = error instanceof ApiRequestError ? error.message : 'Unable to load statistics.'
-        setStatsState({ status: 'error', message: msg })
+        setStatsState({
+          status: 'error',
+          serviceId,
+          window: statsWindow,
+          retryCount: statsRetryCount,
+          message: msg,
+        })
       })
     return () => controller.abort()
-  }, [serviceId, statsWindow, currentState.status])
+  }, [serviceId, statsWindow, statsRetryCount, currentState.status])
 
-  const statsData = statsState.status === 'success' ? statsState.data : null
+  const statsMatch =
+    statsState.status !== 'idle' &&
+    statsState.serviceId === serviceId &&
+    statsState.window === statsWindow &&
+    statsState.retryCount === statsRetryCount
+  const statsData =
+    statsMatch && statsState.status === 'success' ? statsState.data : null
+  const statsError =
+    statsMatch && statsState.status === 'error' ? statsState.message : null
+  const statsLoading =
+    currentState.status === 'loading' || (service !== null && !statsMatch)
   const metrics = statsData?.metrics
 
   return (
@@ -496,7 +535,7 @@ export function ServiceDetailsPage() {
             </div>
           </div>
 
-          {statsState.status === 'loading' && (
+          {statsLoading && (
             <div className="dashboard-panel" role="status" aria-live="polite">
               <div className="service-stats-loading">
                 <span className="visually-hidden">Loading statistics…</span>
@@ -507,26 +546,26 @@ export function ServiceDetailsPage() {
             </div>
           )}
 
-          {statsState.status === 'error' && (
+          {statsError !== null && (
             <div className="dashboard-error" role="alert">
               <div className="dashboard-error-copy">
                 <span className="dashboard-error-mark" aria-hidden="true">!</span>
                 <div>
                   <h3>Statistics unavailable</h3>
-                  <p>{statsState.message}</p>
+                  <p>{statsError}</p>
                 </div>
               </div>
               <button
                 className="dashboard-retry-button"
                 type="button"
-                onClick={() => setStatsWindow((w) => w)}
+                onClick={() => setStatsRetryCount((count) => count + 1)}
               >
                 Try again
               </button>
             </div>
           )}
 
-          {statsState.status === 'success' && metrics && (
+          {statsData && metrics && (
             <div className="service-stats-grid" aria-label="Monitoring statistics">
               <article className="service-stats-card" aria-label="Total checks">
                 <h3>Total checks</h3>
@@ -564,11 +603,6 @@ export function ServiceDetailsPage() {
             </div>
           )}
 
-          {statsState.status === 'idle' && (
-            <div className="service-stats-empty" role="status">
-              <p>Select a time window above to view monitoring statistics.</p>
-            </div>
-          )}
         </section>
       </div>
     </AppLayout>

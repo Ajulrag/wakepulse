@@ -1306,7 +1306,7 @@ export function ServicesPage() {
                               {providerLabels[service.provider]}
                             </span>
                           </th>
-                          <td>
+                          <td data-label="URL / domain">
                             <span
                               className="services-domain"
                               title={`Full monitored URL: ${getResolvedServiceUrl(service)}`}
@@ -1317,7 +1317,7 @@ export function ServicesPage() {
                               {service.endpoint}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <div className="services-status-cell">
                               <span
                                 className={`services-status services-status--${status}`}
@@ -1335,7 +1335,7 @@ export function ServicesPage() {
                               )}
                             </div>
                           </td>
-                          <td className="services-monitoring-cell">
+                          <td className="services-monitoring-cell" data-label="Monitoring">
                             <div className="services-monitoring-controls">
                               <span
                                 className={`services-monitoring services-monitoring--${service.enabled ? 'enabled' : 'disabled'}`}
@@ -1375,9 +1375,9 @@ export function ServicesPage() {
                               </p>
                             )}
                           </td>
-                          <td className="services-table-mono">{service.method}</td>
-                          <td>{formatInterval(service.intervalSeconds)}</td>
-                          <td>
+                          <td className="services-table-mono" data-label="Method">{service.method}</td>
+                          <td data-label="Interval">{formatInterval(service.intervalSeconds)}</td>
+                          <td data-label="Last checked">
                             {service.lastCheckedAt === null ? (
                               'Never'
                             ) : (
@@ -1386,15 +1386,15 @@ export function ServicesPage() {
                               </time>
                             )}
                           </td>
-                          <td className="services-table-mono">
+                          <td className="services-table-mono" data-label="HTTP code">
                             {service.lastStatusCode ?? '—'}
                           </td>
-                          <td>
+                          <td data-label="Response">
                             {service.lastResponseTime === null
                               ? '—'
                               : `${service.lastResponseTime} ms`}
                           </td>
-                          <td className="services-actions-cell">
+                          <td className="services-actions-cell" data-label="Actions">
                             <div className="services-row-actions">
                               <button
                                 className="services-ping-button"

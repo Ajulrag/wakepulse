@@ -7,16 +7,27 @@ const BLOCKED_HOSTNAMES = new Set([
 ]);
 
 const BLOCKED_IPV4_RANGES = [
+  { start: "0.0.0.0", end: "0.255.255.255" },
   { start: "10.0.0.0", end: "10.255.255.255" },
   { start: "100.64.0.0", end: "100.127.255.255" },
   { start: "127.0.0.0", end: "127.255.255.255" },
   { start: "169.254.0.0", end: "169.254.255.255" },
   { start: "172.16.0.0", end: "172.31.255.255" },
   { start: "192.0.0.0", end: "192.0.0.255" },
+  { start: "192.0.2.0", end: "192.0.2.255" },
+  { start: "192.88.99.0", end: "192.88.99.255" },
   { start: "192.168.0.0", end: "192.168.255.255" },
   { start: "198.18.0.0", end: "198.19.255.255" },
+  { start: "198.51.100.0", end: "198.51.100.255" },
+  { start: "203.0.113.0", end: "203.0.113.255" },
   { start: "224.0.0.0", end: "255.255.255.255" },
 ];
+
+export interface SafeTarget {
+  url: URL;
+  address: string;
+  family: 4 | 6;
+}
 
 function ipv4ToNumber(ip: string): number {
   return ip
@@ -26,6 +37,31 @@ function ipv4ToNumber(ip: string): number {
         result * 256 + Number(octet),
       0,
     );
+}
+
+function ipv6ToBigInt(ip: string): bigint {
+  let normalized = ip.toLowerCase();
+
+  if (normalized.includes(".")) {
+    const lastColon = normalized.lastIndexOf(":");
+    const ipv4Value = BigInt(ipv4ToNumber(normalized.slice(lastColon + 1)));
+    const high = Number((ipv4Value >> 16n) & 0xffffn).toString(16);
+    const low = Number(ipv4Value & 0xffffn).toString(16);
+    normalized = `${normalized.slice(0, lastColon)}:${high}:${low}`;
+  }
+
+  const [leftText = "", rightText] = normalized.split("::");
+  const left = leftText ? leftText.split(":") : [];
+  const right = rightText ? rightText.split(":") : [];
+  const missingSegments = 8 - left.length - right.length;
+  const segments = rightText === undefined
+    ? left
+    : [...left, ...Array.from({ length: missingSegments }, () => "0"), ...right];
+
+  return segments.reduce(
+    (value, segment) => (value << 16n) | BigInt(`0x${segment || "0"}`),
+    0n,
+  );
 }
 
 function isBlockedIpv4(ip: string): boolean {
@@ -40,18 +76,33 @@ function isBlockedIpv4(ip: string): boolean {
 }
 
 function isBlockedIpv6(ip: string): boolean {
-  const normalized = ip.toLowerCase();
+  const value = ipv6ToBigInt(ip);
+
+  const ipv4MappedPrefix = value >> 32n;
+  if (ipv4MappedPrefix === 0xffffn) {
+    const ipv4Value = Number(value & 0xffffffffn);
+    const ipv4 = [
+      (ipv4Value >>> 24) & 0xff,
+      (ipv4Value >>> 16) & 0xff,
+      (ipv4Value >>> 8) & 0xff,
+      ipv4Value & 0xff,
+    ].join(".");
+    return isBlockedIpv4(ipv4);
+  }
+
+  const isGlobalUnicast = value >> 125n === 1n;
+  const isIanaSpecialPurpose = value >> 105n === 0x100080n;
 
   return (
-    normalized === "::1" ||
-    normalized === "::" ||
-    normalized.startsWith("fc") ||
-    normalized.startsWith("fd") ||
-    normalized.startsWith("fe80:")
+    !isGlobalUnicast ||
+    isIanaSpecialPurpose ||
+    value >> 96n === 0x20010db8n ||
+    value >> 112n === 0x2002n ||
+    value >> 108n === 0x3fff0n
   );
 }
 
-function isBlockedIp(ip: string): boolean {
+export function isBlockedIp(ip: string): boolean {
   const version = net.isIP(ip);
 
   if (version === 4) {
@@ -65,9 +116,9 @@ function isBlockedIp(ip: string): boolean {
   return false;
 }
 
-async function assertSafeHostname(
+async function resolveSafeHostname(
   hostname: string,
-): Promise<void> {
+): Promise<Array<{ address: string; family: 4 | 6 }>> {
   const normalizedHostname = hostname
     .toLowerCase()
     .replace(/\.$/, "");
@@ -76,12 +127,16 @@ async function assertSafeHostname(
     throw new Error("BLOCKED_HOSTNAME");
   }
 
-  if (net.isIP(normalizedHostname)) {
+  const ipVersion = net.isIP(normalizedHostname);
+  if (ipVersion) {
     if (isBlockedIp(normalizedHostname)) {
       throw new Error("BLOCKED_IP");
     }
 
-    return;
+    return [{
+      address: normalizedHostname,
+      family: ipVersion as 4 | 6,
+    }];
   }
 
   const addresses = await dns.lookup(
@@ -101,12 +156,14 @@ async function assertSafeHostname(
       throw new Error("BLOCKED_IP");
     }
   }
+
+  return addresses as Array<{ address: string; family: 4 | 6 }>;
 }
 
 export async function buildSafeTargetUrl(
   baseUrl: string,
   endpoint: string,
-): Promise<string> {
+): Promise<SafeTarget> {
   let base: URL;
 
   try {
@@ -122,11 +179,9 @@ export async function buildSafeTargetUrl(
     throw new Error("UNSUPPORTED_PROTOCOL");
   }
 
-  if (!base.hostname) {
+  if (!base.hostname || base.username || base.password) {
     throw new Error("INVALID_URL");
   }
-
-  await assertSafeHostname(base.hostname);
 
   let target: URL;
 
@@ -143,14 +198,21 @@ export async function buildSafeTargetUrl(
     throw new Error("UNSUPPORTED_PROTOCOL");
   }
 
-  if (
-    target.hostname.toLowerCase() !==
-    base.hostname.toLowerCase()
-  ) {
+  if (target.origin !== base.origin || target.username || target.password) {
     throw new Error("ENDPOINT_HOST_MISMATCH");
   }
 
-  await assertSafeHostname(target.hostname);
+  const hostname = target.hostname.replace(/^\[|\]$/g, "");
+  const addresses = await resolveSafeHostname(hostname);
+  const address = addresses[0];
 
-  return target.toString();
+  if (!address) {
+    throw new Error("HOSTNAME_RESOLUTION_FAILED");
+  }
+
+  return {
+    url: target,
+    address: address.address,
+    family: address.family,
+  };
 }
