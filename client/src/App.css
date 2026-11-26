@@ -3408,6 +3408,299 @@ html[data-theme='dark'] .history-load-more {
   }
 }
 
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+html[data-theme='dark'] .app-shell {
+  --color-ink: #e7edf5;
+  --color-muted: #b1bdcc;
+  --color-subtle: #9cabbc;
+  --color-border: #34465b;
+  --color-accent: #58cbb6;
+  color: #e7edf5;
+  background: #0e1725;
+}
+
+html[data-theme='dark'] .main-content {
+  background: #0e1725;
+}
+
+html[data-theme='dark'] .topbar,
+html[data-theme='dark'] .page-heading,
+html[data-theme='dark'] .dashboard-panel,
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .statistics-card,
+html[data-theme='dark'] .history-stat-card,
+html[data-theme='dark'] .services-section,
+html[data-theme='dark'] .services-table-panel,
+html[data-theme='dark'] .settings-panel {
+  border-color: #2d3e52;
+  background: #172538;
+  color: #e7edf5;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
+}
+
+html[data-theme='dark'] .page-heading {
+  background:
+    radial-gradient(ellipse at 92% 20%, rgb(34 180 157 / 8%), transparent 35%),
+    #172538;
+}
+
+html[data-theme='dark'] .page-heading h1,
+html[data-theme='dark'] .summary-section-heading h2,
+html[data-theme='dark'] .panel-heading h2,
+html[data-theme='dark'] .settings-panel h2,
+html[data-theme='dark'] .history-service-name,
+html[data-theme='dark'] .services-table-service-name,
+html[data-theme='dark'] .services-details-link,
+html[data-theme='dark'] .summary-card-value,
+html[data-theme='dark'] .statistics-card-value,
+html[data-theme='dark'] .history-stat-card strong,
+html[data-theme='dark'] .settings-account-card strong,
+html[data-theme='dark'] .settings-toggle-row strong,
+html[data-theme='dark'] .activity-service-name,
+html[data-theme='dark'] .upcoming-service-name,
+html[data-theme='dark'] .dashboard-zero-state strong {
+  color: #e7edf5;
+}
+
+html[data-theme='dark'] .page-description,
+html[data-theme='dark'] .summary-section-heading p,
+html[data-theme='dark'] .panel-heading p,
+html[data-theme='dark'] .summary-card-label,
+html[data-theme='dark'] .summary-card-description,
+html[data-theme='dark'] .statistics-card-heading h3,
+html[data-theme='dark'] .statistics-card-description,
+html[data-theme='dark'] .history-stat-label,
+html[data-theme='dark'] .settings-label,
+html[data-theme='dark'] .settings-toggle-row p,
+html[data-theme='dark'] .activity-details,
+html[data-theme='dark'] .activity-detail-label,
+html[data-theme='dark'] .activity-details time,
+html[data-theme='dark'] .upcoming-check-details,
+html[data-theme='dark'] .upcoming-detail-label,
+html[data-theme='dark'] .services-results-count,
+html[data-theme='dark'] .activity-list-footer,
+html[data-theme='dark'] .history-pagination,
+html[data-theme='dark'] .history-toolbar-fields label,
+html[data-theme='dark'] .activity-list-controls {
+  color: #aebccd;
+}
+
+html[data-theme='dark'] .eyebrow {
+  color: #68d6c1;
+}
+
+html[data-theme='dark'] .services-results-toolbar,
+html[data-theme='dark'] .history-toolbar,
+html[data-theme='dark'] .history-pagination,
+html[data-theme='dark'] .activity-list-footer,
+html[data-theme='dark'] .services-table thead,
+html[data-theme='dark'] .services-table thead th,
+html[data-theme='dark'] .history-table thead,
+html[data-theme='dark'] .history-table th {
+  border-color: #2d3e52;
+  background: #1d2c40;
+  color: #aebccd;
+}
+
+html[data-theme='dark'] .services-table tbody tr,
+html[data-theme='dark'] .history-table tbody tr {
+  border-color: #34475c;
+  background: #172538;
+}
+
+html[data-theme='dark'] .services-table tbody tr:hover {
+  background: #1c3045;
+}
+
+html[data-theme='dark'] .services-table tbody th,
+html[data-theme='dark'] .services-table tbody td,
+html[data-theme='dark'] .history-table tbody td {
+  border-color: #2d3e52;
+  color: #d7e0eb;
+}
+
+html[data-theme='dark'] .history-table tbody td::before,
+html[data-theme='dark'] .services-table tbody td::before {
+  color: #a7b6c7;
+}
+
+html[data-theme='dark'] .history-toolbar select,
+html[data-theme='dark'] .history-search-field input,
+html[data-theme='dark'] .activity-list-controls select,
+html[data-theme='dark'] .services-filter-field input,
+html[data-theme='dark'] .services-filter-field select,
+html[data-theme='dark'] .settings-field-group select,
+html[data-theme='dark'] .services-form input,
+html[data-theme='dark'] .services-form select,
+html[data-theme='dark'] .history-pagination button,
+html[data-theme='dark'] .logout-button,
+html[data-theme='dark'] .dashboard-retry-button,
+html[data-theme='dark'] .services-edit-button,
+html[data-theme='dark'] .services-delete-button,
+html[data-theme='dark'] .services-toggle-button {
+  border-color: #42566d;
+  color: #e0e8f1;
+  background: #101c2c;
+}
+
+html[data-theme='dark'] .history-toolbar input::placeholder,
+html[data-theme='dark'] .services-filter-field input::placeholder,
+html[data-theme='dark'] .services-form input::placeholder {
+  color: #899bb0;
+  opacity: 1;
+}
+
+html[data-theme='dark'] .history-toolbar select:focus-visible,
+html[data-theme='dark'] .history-search-field input:focus-visible,
+html[data-theme='dark'] .activity-list-controls select:focus-visible,
+html[data-theme='dark'] .services-filter-field input:focus-visible,
+html[data-theme='dark'] .services-filter-field select:focus-visible,
+html[data-theme='dark'] .settings-field-group select:focus-visible,
+html[data-theme='dark'] .services-form input:focus-visible,
+html[data-theme='dark'] .services-form select:focus-visible {
+  border-color: #59cdb7;
+  outline-color: #59cdb7;
+}
+
+html[data-theme='dark'] .settings-account-card {
+  background: #172538;
+}
+
+html[data-theme='dark'] .settings-account-card > div,
+html[data-theme='dark'] .settings-toggle-row,
+html[data-theme='dark'] .panel-heading,
+html[data-theme='dark'] .activity-item,
+html[data-theme='dark'] .upcoming-check-item,
+html[data-theme='dark'] .history-table-panel .summary-section-heading,
+html[data-theme='dark'] .services-section-heading {
+  border-color: #2d3e52;
+}
+
+html[data-theme='dark'] .dashboard-zero-state {
+  border-color: #31564f;
+  background: #172f30;
+}
+
+html[data-theme='dark'] .dashboard-zero-state strong {
+  color: #c1e6dc;
+}
+
+html[data-theme='dark'] .dashboard-zero-state p {
+  color: #a2c5bc;
+}
+
+html[data-theme='dark'] .dashboard-live-state {
+  border-color: #31564f;
+  color: #b4ded4;
+  background: #172f30;
+}
+
+html[data-theme='dark'] .services-empty-state,
+html[data-theme='dark'] .activity-empty-state,
+html[data-theme='dark'] .upcoming-empty-state {
+  color: #e0e8f1;
+  background: #172538;
+}
+
+html[data-theme='dark'] .services-empty-state h3,
+html[data-theme='dark'] .activity-empty-state h3,
+html[data-theme='dark'] .upcoming-empty-state h3 {
+  color: #e0e8f1;
+}
+
+html[data-theme='dark'] .services-empty-state p,
+html[data-theme='dark'] .activity-empty-state p,
+html[data-theme='dark'] .upcoming-empty-state p {
+  color: #aebccd;
+}
+
+html[data-theme='dark'] .settings-save-error,
+html[data-theme='dark'] .history-load-more-error,
+html[data-theme='dark'] .services-form-error,
+html[data-theme='dark'] .dashboard-error {
+  border-color: #70434b;
+  color: #f3bdc2;
+  background: #35232a;
+}
+
+html[data-theme='dark'] .services-page-notice {
+  border-color: #37665f;
+  color: #b8e4da;
+  background: #17322f;
+}
+
+html[data-theme='dark'] .services-delete-target {
+  border-color: #34475c;
+  background: #1d2c40;
+}
+
+html[data-theme='dark'] .services-delete-target strong {
+  color: #e7edf5;
+}
+
+html[data-theme='dark'] .services-delete-target span,
+html[data-theme='dark'] .services-required-note,
+html[data-theme='dark'] .services-field-hint,
+html[data-theme='dark'] .services-ping-hint {
+  color: #aebccd;
+}
+
+html[data-theme='dark'] .history-sort-icon {
+  stroke: #9cadbf;
+}
+
+html[data-theme='dark'] .history-sort-icon--active {
+  stroke: #69d6c2;
+}
+
+html[data-theme='dark'] .history-pill--success {
+  color: #82e0bc;
+  background: #173a33;
+}
+
+html[data-theme='dark'] .history-pill--failed {
+  color: #ffb0ac;
+  background: #412a2c;
+}
+
+html[data-theme='dark'] .history-pill--timeout {
+  color: #f3ca79;
+  background: #403522;
+}
+
+html[data-theme='dark'] .history-pill--error {
+  color: #d2bdf4;
+  background: #352b49;
+}
+
+html[data-theme='dark'] .services-ping-button,
+html[data-theme='dark'] .services-clear-filters {
+  border-color: #37665f;
+  color: #8de0cd;
+  background: #17322f;
+}
+
+html[data-theme='dark'] .services-delete-button {
+  border-color: #66434a;
+  color: #f0a8ae;
+}
+
+html[data-theme='dark'] .services-delete-button:hover:not(:disabled) {
+  border-color: #8d515a;
+  background: #38252d;
+}
+
+html[data-theme='dark'] .services-status-error,
+html[data-theme='dark'] .services-field-error,
+html[data-theme='dark'] .services-toggle-error,
+html[data-theme='dark'] .services-ping-feedback--error,
+html[data-theme='dark'] .services-delete-warning {
+  color: #f2b8be;
+}
+
 .activity-list-controls {
   display: flex;
   align-items: center;
