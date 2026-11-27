@@ -6,7 +6,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom'
-import { RequireAuth } from './components/auth/RequireAuth'
+import { RequireAdmin, RequireAuth } from './components/auth/RequireAuth'
 import './components/auth/AuthRoutes.css'
 import { useAuth } from './context/useAuth'
 import { ServicesPage } from './pages/ServicesPage'
@@ -21,6 +21,8 @@ import { SettingsPage } from './pages/SettingsPage'
 import { ThemeToggle } from './components/ThemeToggle'
 import { ErrorPage } from './components/ErrorPage'
 import { LandingPage } from './pages/LandingPage'
+import { AdminPage } from './pages/AdminPage'
+import { VisitorTracker } from './components/VisitorTracker'
 
 function AuthStatusPage({ message }: { message: string }) {
   const { refreshUser } = useAuth()
@@ -92,6 +94,8 @@ export default function App() {
   }
 
   return (
+    <>
+    <VisitorTracker />
     <Routes>
       <Route path="/" element={<LandingPage />} />
 
@@ -108,9 +112,13 @@ export default function App() {
         <Route path="services/:serviceId" element={<ServiceDetailsPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route element={<RequireAdmin />}>
+          <Route path="admin" element={<AdminPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<ErrorPage variant="not-found" />} />
     </Routes>
+    </>
   )
 }

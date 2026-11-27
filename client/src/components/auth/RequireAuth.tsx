@@ -36,3 +36,13 @@ export function RequireAuth() {
 
   return <Outlet />
 }
+
+export function RequireAdmin() {
+  const { state } = useAuth()
+
+  if (state.status !== 'authenticated' || state.user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return <Outlet />
+}

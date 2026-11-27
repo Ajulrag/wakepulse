@@ -4,6 +4,7 @@ import {
   servicesCollection,
   checkLogsCollection,
   passwordResetsCollection,
+  pageViewsCollection,
 } from "./collections.js";
 
 export async function initializeDatabase(): Promise<void> {
@@ -62,6 +63,16 @@ export async function initializeDatabase(): Promise<void> {
     serviceId: 1,
     userId: 1,
     checkedAt: -1,
+  });
+
+  await pageViewsCollection().createIndex(
+    { createdAt: 1 },
+    { expireAfterSeconds: 60 * 60 * 24 * 90 },
+  );
+
+  await pageViewsCollection().createIndex({
+    date: 1,
+    visitorId: 1,
   });
 
   console.log("WakePulse database indexes initialized");

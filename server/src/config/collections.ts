@@ -8,6 +8,7 @@ import type {
   ServiceDocument,
   CheckLogDocument,
   PasswordResetDocument,
+  PageViewDocument,
 } from "../types/database.js";
 
 export function usersCollection(): Collection<UserDocument> {
@@ -28,4 +29,8 @@ export function servicesCollection(): Collection<ServiceDocument> {
 
 export function checkLogsCollection(): Collection<CheckLogDocument> {
   return getDatabase().collection<CheckLogDocument>("check_logs");
+}
+
+export function pageViewsCollection(): Collection<PageViewDocument> {
+  return getDatabase().collection<PageViewDocument>("page_views");
 }

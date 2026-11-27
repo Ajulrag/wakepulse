@@ -5,7 +5,7 @@ import { ThemeToggle } from './ThemeToggle'
 import '../App.css'
 
 interface AppLayoutProps {
-  activePage: 'dashboard' | 'services' | 'history' | 'settings'
+  activePage: 'dashboard' | 'services' | 'history' | 'settings' | 'admin'
   children: ReactNode
 }
 
@@ -16,6 +16,8 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
   const logoutSubmissionLock = useRef(false)
   const accountName =
     authState.status === 'authenticated' ? authState.user.name : ''
+  const isAdmin =
+    authState.status === 'authenticated' && authState.user.role === 'admin'
 
   const currentPageLabel =
     activePage === 'dashboard'
@@ -24,7 +26,9 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
         ? 'Services'
         : activePage === 'history'
           ? 'Monitoring / History'
-          : 'Settings'
+          : activePage === 'admin'
+            ? 'Administration'
+            : 'Settings'
 
   const handleLogout = async () => {
     if (logoutSubmissionLock.current) {
@@ -103,6 +107,19 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
             </svg>
             <span>Settings</span>
           </Link>
+          {isAdmin && (
+            <Link
+              className={`nav-link${activePage === 'admin' ? ' nav-link--active' : ''}`}
+              to="/admin"
+              aria-current={activePage === 'admin' ? 'page' : undefined}
+            >
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2.5 16 5v4.4c0 3.8-2.6 6.7-6 8.1-3.4-1.4-6-4.3-6-8.1V5l6-2.5Z" />
+                <path d="m7.5 9.8 1.7 1.7 3.5-3.6" />
+              </svg>
+              <span>Administration</span>
+            </Link>
+          )}
         </nav>
 
         <div className="sidebar-footer">

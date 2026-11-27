@@ -38,6 +38,8 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 - Scheduled health monitoring with concurrency-safe polling
 - Dashboard summaries and recent activity views
 - Monitoring history and workspace settings pages
+- Role-protected admin console for account access, service management, and visitor analytics
+- Anonymous, session-based page-view analytics with automatic 90-day event expiry
 - Dockerized deployment configuration using MongoDB Atlas, Nginx, and Caddy-managed HTTPS
 
 ## Deploy to an Ubuntu VPS
@@ -111,3 +113,20 @@ Password-reset email is optional; configure the `SMTP_*` values in
 `server/.env` to enable it. Docker Compose reads `server/.env` for API settings
 and the Caddy domain; only the non-secret domain is passed to Caddy.
 `NODE_ENV` is set to `production` by Compose.
+
+### Admin access and visitor analytics
+
+Create the intended administrator account through the normal registration flow,
+then have a trusted database operator assign its `role` to `admin` in MongoDB
+(for example, in MongoDB Atlas Data Explorer). Public registration never grants
+privileged roles, because account email ownership is not verified. Once the
+first administrator is active, additional admin roles can be granted in the
+admin console. Role changes take effect on the next API request.
+
+The admin console is available at `/admin` to active admins. It can review and
+suspend user accounts, grant or remove admin roles, inspect all monitored
+services, pause or resume monitoring, and remove services with their check
+history. Visitor analytics count normalized page views and anonymous browser
+sessions only; IP addresses, account identities, and URL query strings are not
+stored. Visitor events are automatically deleted after 90 days, and browsers
+that send Do Not Track are not counted.

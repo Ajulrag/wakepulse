@@ -89,7 +89,10 @@ export async function requireAuth(
     }
 
     // 8. Attach authenticated JWT information to the request
-    req.auth = payload;
+    req.auth = {
+      ...payload,
+      role: user.role,
+    };
 
     // 9. Continue to the protected controller
     next();

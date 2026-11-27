@@ -85,3 +85,11 @@ export interface CheckLogDocument {
   checkedAt: Date;
   createdAt: Date;
 }
+
+export interface PageViewDocument {
+  _id?: ObjectId;
+  visitorId: string;
+  path: string;
+  date: string;
+  createdAt: Date;
+}

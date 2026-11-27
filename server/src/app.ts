@@ -6,9 +6,13 @@ import helmet from "helmet";
 import authRoutes from "./routes/auth.routes.js";
 import serviceRoutes from "./routes/service.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 const app = express();
 
+// Public traffic reaches Express through Caddy and Nginx.
+app.set("trust proxy", 2);
 app.use(helmet());
 
 app.use(
@@ -32,5 +36,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 export default app;
