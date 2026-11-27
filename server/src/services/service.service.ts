@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import {
   servicesCollection,
   checkLogsCollection,
+  usersCollection,
 } from "../config/collections.js";
 
 import type {
@@ -16,6 +17,11 @@ import type {
 } from "../validation/service.js";
 
 import { checkHttpEndpoint } from "../utils/http-checker.js";
+import {
+  getServiceAlertEvent,
+  storeServiceNotification,
+} from "./notification.service.js";
+import { sendServiceAlertEmail } from "./email.service.js";
 
 export type MonitoringWindow =
   | "24h"
@@ -23,6 +29,34 @@ export type MonitoringWindow =
   | "30d";
 
 const inFlightServiceChecks = new Set<string>();
+
+async function sendServiceAlertToOwner(input: {
+  userId: ObjectId;
+  serviceName: string;
+  event: "service_down" | "service_recovered";
+  error: string | null;
+  checkedAt: Date;
+}): Promise<void> {
+  try {
+    const owner = await usersCollection().findOne({
+      _id: input.userId,
+    });
+    if (!owner) {
+      throw new Error("SERVICE_OWNER_NOT_FOUND");
+    }
+
+    await sendServiceAlertEmail({
+      email: owner.email,
+      name: owner.name,
+      serviceName: input.serviceName,
+      event: input.event,
+      error: input.error,
+      checkedAt: input.checkedAt,
+    });
+  } catch (error) {
+    console.error("Unable to send service alert email:", error);
+  }
+}
 
 function getMonitoringWindowStart(
   window: MonitoringWindow,
@@ -252,6 +286,9 @@ async function runServiceCheck(
     method: service.method,
     timeoutSeconds: service.timeoutSeconds,
   });
+  const nextStatus =
+    result.status === "success" ? "online" : "offline";
+  const alertEvent = getServiceAlertEvent(service.status, nextStatus);
 
   const nextCheckAt = new Date(
     checkedAt.getTime() +
@@ -259,10 +296,7 @@ async function runServiceCheck(
   );
 
   const update: Partial<ServiceDocument> = {
-    status:
-      result.status === "success"
-        ? "online"
-        : "offline",
+    status: nextStatus,
     lastCheckedAt: checkedAt,
     lastStatusCode: result.statusCode,
     lastResponseTime: result.responseTime,
@@ -295,6 +329,29 @@ async function runServiceCheck(
     checkedAt,
     createdAt: checkedAt,
   });
+
+  if (alertEvent) {
+    try {
+      await storeServiceNotification({
+        userId: service.userId,
+        serviceId: service._id,
+        serviceName: service.name,
+        event: alertEvent,
+        error: alertEvent === "service_down" ? result.error : null,
+        createdAt: checkedAt,
+      });
+    } catch (error) {
+      console.error("Unable to save service alert notification:", error);
+    }
+
+    void sendServiceAlertToOwner({
+      userId: service.userId,
+      serviceName: service.name,
+      event: alertEvent,
+      error: alertEvent === "service_down" ? result.error : null,
+      checkedAt,
+    });
+  }
 
   const updatedService =
     await servicesCollection().findOne({

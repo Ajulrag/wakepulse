@@ -40,6 +40,7 @@ WakePulse is a service monitoring and keep-alive platform that periodically send
 - Monitoring history and workspace settings pages
 - Role-protected admin console for account access, service management, and visitor analytics
 - Anonymous, session-based page-view analytics with automatic 90-day event expiry
+- In-app service alerts and recovery emails with admin-managed sender identity
 - Dockerized deployment configuration using MongoDB Atlas, Nginx, and Caddy-managed HTTPS
 
 ## Deploy to an Ubuntu VPS
@@ -130,6 +131,18 @@ history. Visitor analytics count normalized page views and anonymous browser
 sessions only; IP addresses, account identities, and URL query strings are not
 stored. Visitor events are automatically deleted after 90 days, and browsers
 that send Do Not Track are not counted.
+
+### Service alerts
+
+Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, and
+`SMTP_PASSWORD` in `server/.env`. Active users see an in-app notification and
+receive an email at their account address when one of their monitored services
+goes offline, followed by another notification/email when it recovers. Alerts
+are sent on status transitions rather than on every failed poll to avoid
+repeated emails during an ongoing outage. Configure and test the sender name
+and from-address in **Administration → Alerts & email**. The sender address
+must be authorized by the configured SMTP provider; SMTP credentials remain
+server-side and are never shown in the admin UI.
 
 If all service checks fail with a connection error, remember that checks run
 from the API container, not the browser. After deploying an update, inspect the

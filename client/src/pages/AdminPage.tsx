@@ -3,8 +3,11 @@ import {
   deleteAdminService,
   getAdminAnalytics,
   getAdminDashboard,
+  getAdminEmailSettings,
   getAdminServices,
   getAdminUsers,
+  saveAdminEmailSettings,
+  sendAdminTestEmail,
   updateAdminService,
   updateAdminUser,
 } from '../api/admin'
@@ -13,6 +16,7 @@ import { AppLayout } from '../components/AppLayout'
 import { useAuth } from '../context/useAuth'
 import type {
   AdminDashboardData,
+  AdminEmailSettings,
   AdminPage as AdminPageResult,
   AdminService,
   AdminUser,
@@ -21,7 +25,7 @@ import type {
 import '../App.css'
 import './AdminPage.css'
 
-type AdminTab = 'overview' | 'users' | 'services' | 'analytics'
+type AdminTab = 'overview' | 'users' | 'services' | 'analytics' | 'email'
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
@@ -157,6 +161,11 @@ export function AdminPage() {
     null,
   )
   const [analytics, setAnalytics] = useState<VisitorAnalytics | null>(null)
+  const [emailSettings, setEmailSettings] =
+    useState<AdminEmailSettings | null>(null)
+  const [senderName, setSenderName] = useState('')
+  const [senderEmail, setSenderEmail] = useState('')
+  const [emailNotice, setEmailNotice] = useState('')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [analyticsDays, setAnalyticsDays] = useState(14)
@@ -197,10 +206,17 @@ export function AdminPage() {
           setUsers(await getAdminUsers(page, search, controller.signal))
         } else if (tab === 'services') {
           setServices(await getAdminServices(page, search, controller.signal))
-        } else {
+        } else if (tab === 'analytics') {
           setAnalytics(
             await getAdminAnalytics(analyticsDays, controller.signal),
           )
+        } else {
+          const settings = await getAdminEmailSettings(controller.signal)
+          if (!controller.signal.aborted) {
+            setEmailSettings(settings)
+            setSenderName(settings.senderName)
+            setSenderEmail(settings.senderEmail)
+          }
         }
       } catch (requestError: unknown) {
         if (!controller.signal.aborted) {
@@ -229,6 +245,7 @@ export function AdminPage() {
       users: 'Users & accounts',
       services: 'Services',
       analytics: 'Visitor analytics',
+      email: 'Alerts & email',
     })[tab],
     [tab],
   )
@@ -300,11 +317,44 @@ export function AdminPage() {
     }
   }
 
+  const handleSaveEmailSettings = async () => {
+    setPendingId('email-settings')
+    setError('')
+    setEmailNotice('')
+    try {
+      const settings = await saveAdminEmailSettings({
+        senderName: senderName.trim(),
+        senderEmail: senderEmail.trim(),
+      })
+      setEmailSettings(settings)
+      setEmailNotice('Sender settings saved.')
+    } catch (requestError: unknown) {
+      setError(getErrorMessage(requestError))
+    } finally {
+      setPendingId(null)
+    }
+  }
+
+  const handleSendTestEmail = async () => {
+    setPendingId('email-test')
+    setError('')
+    setEmailNotice('')
+    try {
+      await sendAdminTestEmail()
+      setEmailNotice('Test email sent to your administrator account.')
+    } catch (requestError: unknown) {
+      setError(getErrorMessage(requestError))
+    } finally {
+      setPendingId(null)
+    }
+  }
+
   const tabs: Array<{ id: AdminTab; label: string }> = [
     { id: 'overview', label: 'Overview' },
     { id: 'users', label: 'Users & accounts' },
     { id: 'services', label: 'Services' },
     { id: 'analytics', label: 'Visitor analytics' },
+    { id: 'email', label: 'Alerts & email' },
   ]
 
   return (
@@ -651,6 +701,89 @@ export function AdminPage() {
               session storage, and the tracker respects the browser’s Do Not Track setting.
             </p>
           </>
+        )}
+
+        {!loading && tab === 'email' && (
+          <section className="admin-panel admin-email-panel">
+            <div className="admin-panel-heading">
+              <div>
+                <h2>Service alert emails</h2>
+                <p>
+                  Alerts are sent to the email address on each service owner’s account.
+                  An email is sent when a service goes down and again when it recovers.
+                </p>
+              </div>
+              <span
+                className={`admin-badge ${emailSettings?.smtpConfigured ? 'admin-badge--active' : 'admin-badge--inactive'}`}
+              >
+                {emailSettings?.smtpConfigured ? 'SMTP configured' : 'SMTP needs setup'}
+              </span>
+            </div>
+            <div className="admin-email-form">
+              <label>
+                <span>Sender name</span>
+                <input
+                  type="text"
+                  value={senderName}
+                  onChange={(event) => setSenderName(event.target.value)}
+                  maxLength={80}
+                  autoComplete="organization"
+                  required
+                />
+              </label>
+              <label>
+                <span>From email address</span>
+                <input
+                  type="email"
+                  value={senderEmail}
+                  onChange={(event) => setSenderEmail(event.target.value)}
+                  maxLength={254}
+                  autoComplete="email"
+                  required
+                />
+              </label>
+              <div className="admin-email-help">
+                Use an address authorized by your email provider. SMTP host,
+                username, and password remain server-side in <code>server/.env</code>.
+              </div>
+              {emailNotice && (
+                <p className="admin-email-notice" role="status">{emailNotice}</p>
+              )}
+              <div className="admin-email-actions">
+                <button
+                  type="button"
+                  className="admin-primary-button"
+                  disabled={
+                    pendingId !== null ||
+                    senderName.trim().length < 2 ||
+                    senderEmail.trim().length < 3
+                  }
+                  onClick={() => void handleSaveEmailSettings()}
+                >
+                  {pendingId === 'email-settings' ? 'Saving…' : 'Save sender settings'}
+                </button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  disabled={
+                    pendingId !== null ||
+                    !emailSettings?.smtpConfigured ||
+                    !emailSettings.senderEmail ||
+                    senderName.trim() !== emailSettings.senderName ||
+                    senderEmail.trim() !== emailSettings.senderEmail
+                  }
+                  onClick={() => void handleSendTestEmail()}
+                >
+                  {pendingId === 'email-test' ? 'Sending…' : 'Send test email'}
+                </button>
+              </div>
+              {emailSettings?.updatedAt && (
+                <p className="admin-email-updated">
+                  Last saved {formatDate(emailSettings.updatedAt)}
+                </p>
+              )}
+            </div>
+          </section>
         )}
       </div>
     </AppLayout>

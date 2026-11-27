@@ -51,3 +51,10 @@ export interface AdminPage<T> {
   pageSize: number
   total: number
 }
+
+export interface AdminEmailSettings {
+  senderName: string
+  senderEmail: string
+  smtpConfigured: boolean
+  updatedAt: string | null
+}

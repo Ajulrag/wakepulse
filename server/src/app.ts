@@ -8,6 +8,7 @@ import serviceRoutes from "./routes/service.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 const app = express();
 
@@ -38,5 +39,6 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 export default app;

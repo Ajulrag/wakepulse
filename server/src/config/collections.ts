@@ -9,6 +9,8 @@ import type {
   CheckLogDocument,
   PasswordResetDocument,
   PageViewDocument,
+  NotificationDocument,
+  AdminEmailSettingsDocument,
 } from "../types/database.js";
 
 export function usersCollection(): Collection<UserDocument> {
@@ -33,4 +35,12 @@ export function checkLogsCollection(): Collection<CheckLogDocument> {
 
 export function pageViewsCollection(): Collection<PageViewDocument> {
   return getDatabase().collection<PageViewDocument>("page_views");
+}
+
+export function notificationsCollection(): Collection<NotificationDocument> {
+  return getDatabase().collection<NotificationDocument>("notifications");
+}
+
+export function adminEmailSettingsCollection(): Collection<AdminEmailSettingsDocument> {
+  return getDatabase().collection<AdminEmailSettingsDocument>("admin_email_settings");
 }

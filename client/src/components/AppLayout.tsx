@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { ThemeToggle } from './ThemeToggle'
+import { NotificationBell } from './NotificationBell'
 import '../App.css'
 
 interface AppLayoutProps {
@@ -138,6 +139,7 @@ export function AppLayout({ activePage, children }: AppLayoutProps) {
           </nav>
           <div className="topbar-actions">
             <ThemeToggle />
+            <NotificationBell />
             {accountName && <span className="topbar-user">{accountName}</span>}
             <button
               className="logout-button"

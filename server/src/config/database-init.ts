@@ -5,6 +5,7 @@ import {
   checkLogsCollection,
   passwordResetsCollection,
   pageViewsCollection,
+  notificationsCollection,
 } from "./collections.js";
 
 export async function initializeDatabase(): Promise<void> {
@@ -73,6 +74,17 @@ export async function initializeDatabase(): Promise<void> {
   await pageViewsCollection().createIndex({
     date: 1,
     visitorId: 1,
+  });
+
+  await notificationsCollection().createIndex({
+    userId: 1,
+    createdAt: -1,
+  });
+
+  await notificationsCollection().createIndex({
+    userId: 1,
+    readAt: 1,
+    createdAt: -1,
   });
 
   console.log("WakePulse database indexes initialized");

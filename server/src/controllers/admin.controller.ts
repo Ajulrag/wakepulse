@@ -8,6 +8,14 @@ import {
   updateAdminService,
   updateAdminUser,
 } from "../services/admin.service.js";
+import {
+  getAdminEmailSettings as readAdminEmailSettings,
+  saveAdminEmailSettings,
+} from "../services/admin-email-settings.service.js";
+import { sendAdminTestEmail } from "../services/email.service.js";
+import { usersCollection } from "../config/collections.js";
+import { ObjectId } from "mongodb";
+import { adminEmailSettingsSchema } from "../validation/admin-email.js";
 import { getVisitorAnalytics } from "../services/analytics.service.js";
 import type { UserRole } from "../types/database.js";
 
@@ -277,6 +285,123 @@ export async function getAdminAnalytics(
     res.status(500).json({
       success: false,
       message: "Unable to retrieve visitor analytics",
+    });
+  }
+}
+
+export async function getAdminEmailSettings(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const settings = await readAdminEmailSettings();
+    res.status(200).json({ success: true, settings });
+  } catch (error) {
+    console.error("Get admin email settings error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve email settings",
+    });
+  }
+}
+
+export async function putAdminEmailSettings(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  if (!req.auth) {
+    res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+    return;
+  }
+
+  const parsed = adminEmailSettingsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid email settings",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+    return;
+  }
+
+  try {
+    const settings = await saveAdminEmailSettings(
+      req.auth.sub,
+      parsed.data.senderName,
+      parsed.data.senderEmail,
+    );
+    res.status(200).json({
+      success: true,
+      message: "Email settings saved",
+      settings,
+    });
+  } catch (error) {
+    console.error("Save admin email settings error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to save email settings",
+    });
+  }
+}
+
+export async function postAdminEmailTest(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  if (!req.auth || !ObjectId.isValid(req.auth.sub)) {
+    res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+    return;
+  }
+
+  try {
+    const admin = await usersCollection().findOne({
+      _id: new ObjectId(req.auth.sub),
+    });
+    if (!admin) {
+      res.status(404).json({
+        success: false,
+        message: "Admin account not found",
+      });
+      return;
+    }
+
+    await sendAdminTestEmail(admin.email, admin.name);
+    res.status(200).json({
+      success: true,
+      message: "Test email sent to your admin account",
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "SMTP_CONFIGURATION_MISSING"
+    ) {
+      res.status(503).json({
+        success: false,
+        message: "SMTP is not configured on the server",
+      });
+      return;
+    }
+    if (
+      error instanceof Error &&
+      error.message === "ALERT_SENDER_EMAIL_MISSING"
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "Configure a sender email address before testing",
+      });
+      return;
+    }
+
+    console.error("Send admin test email error:", error);
+    res.status(502).json({
+      success: false,
+      message: "Unable to send test email",
     });
   }
 }

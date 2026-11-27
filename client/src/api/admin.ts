@@ -4,6 +4,7 @@ import type {
   AdminOverview,
   AdminPage,
   AdminService,
+  AdminEmailSettings,
   AdminUser,
   VisitorAnalytics,
 } from '../types/admin'
@@ -78,6 +79,16 @@ function isAdminService(value: unknown): value is AdminService {
     typeof value.status === 'string' &&
     (value.lastCheckedAt === null || typeof value.lastCheckedAt === 'string') &&
     typeof value.createdAt === 'string'
+  )
+}
+
+function isAdminEmailSettings(value: unknown): value is AdminEmailSettings {
+  return (
+    isRecord(value) &&
+    typeof value.senderName === 'string' &&
+    typeof value.senderEmail === 'string' &&
+    typeof value.smtpConfigured === 'boolean' &&
+    (value.updatedAt === null || typeof value.updatedAt === 'string')
   )
 }
 
@@ -203,6 +214,42 @@ export async function deleteAdminService(id: string): Promise<void> {
   requireRecord(
     await requestJson(`/api/admin/services/${encodeURIComponent(id)}`, {
       method: 'DELETE',
+    }),
+  )
+}
+
+export async function getAdminEmailSettings(
+  signal?: AbortSignal,
+): Promise<AdminEmailSettings> {
+  const record = requireRecord(
+    await requestJson('/api/admin/email-settings', { signal }),
+  )
+  if (!isAdminEmailSettings(record.settings)) {
+    throw invalidResponse()
+  }
+  return record.settings
+}
+
+export async function saveAdminEmailSettings(input: {
+  senderName: string
+  senderEmail: string
+}): Promise<AdminEmailSettings> {
+  const record = requireRecord(
+    await requestJson('/api/admin/email-settings', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  )
+  if (!isAdminEmailSettings(record.settings)) {
+    throw invalidResponse()
+  }
+  return record.settings
+}
+
+export async function sendAdminTestEmail(): Promise<void> {
+  requireRecord(
+    await requestJson('/api/admin/email-settings/test', {
+      method: 'POST',
     }),
   )
 }

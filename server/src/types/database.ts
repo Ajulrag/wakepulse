@@ -93,3 +93,25 @@ export interface PageViewDocument {
   date: string;
   createdAt: Date;
 }
+
+export type NotificationEvent = "service_down" | "service_recovered";
+
+export interface NotificationDocument {
+  _id?: ObjectId;
+  userId: ObjectId;
+  serviceId: ObjectId;
+  serviceName: string;
+  event: NotificationEvent;
+  message: string;
+  error: string | null;
+  createdAt: Date;
+  readAt: Date | null;
+}
+
+export interface AdminEmailSettingsDocument {
+  _id?: string;
+  senderName: string;
+  senderEmail: string;
+  updatedAt: Date;
+  updatedBy: ObjectId;
+}
