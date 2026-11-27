@@ -27,6 +27,12 @@ const agentOptions = {
 
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const RESPONSE_DRAIN_TIMEOUT_MS = 1_000;
+const RETRYABLE_CONNECTION_ERRORS = new Set([
+  "ECONNREFUSED",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "EADDRNOTAVAIL",
+]);
 
 const httpAgent = new HttpAgent(agentOptions);
 const httpsAgent = new HttpsAgent(agentOptions);
@@ -57,92 +63,126 @@ export async function checkHttpEndpoint(
     };
   }
 
-  const request = (target.url.protocol === "https:"
-    ? httpsRequest
-    : httpRequest)(
-    target.url,
-    {
-      method: input.method,
-      agent: target.url.protocol === "https:" ? httpsAgent : httpAgent,
-      lookup: (_hostname, _options, callback) => {
-        callback(null, target.address, target.family);
-      },
-    },
-    (response) => {
-      clearTimeout(timeout);
-      let responseBytes = 0;
-      const drainTimeout = setTimeout(
-        () => response.destroy(),
-        RESPONSE_DRAIN_TIMEOUT_MS,
-      );
-      response.on("data", (chunk: Buffer) => {
-        responseBytes += chunk.length;
-        if (responseBytes > MAX_RESPONSE_BYTES) {
-          response.destroy();
-        }
-      });
-      response.on("end", () => clearTimeout(drainTimeout));
-      response.on("close", () => clearTimeout(drainTimeout));
-      response.on("error", () => clearTimeout(drainTimeout));
-      response.resume();
+  let lastResult: HttpCheckResult | null = null;
 
-      const responseTime = Math.round(
-        performance.now() - startedAt,
-      );
-      const statusCode = response.statusCode ?? null;
-
-      resolveResult({
-        status:
-          statusCode !== null && statusCode >= 200 && statusCode < 300
-            ? "success"
-            : "failed",
-        statusCode,
-        responseTime,
-        error:
-          statusCode !== null && statusCode >= 200 && statusCode < 300
-            ? null
-            : statusCode === null
-              ? "Request failed"
-              : `HTTP ${statusCode}`,
-      });
-    },
-  );
-
-  let settled = false;
-  let resolveResult: (result: HttpCheckResult) => void = () => undefined;
-  const resultPromise = new Promise<HttpCheckResult>((resolve) => {
-    resolveResult = (result) => {
-      if (!settled) {
-        settled = true;
-        resolve(result);
-      }
-    };
-  });
-
-  const timeout = setTimeout(() => {
-    request.destroy(new Error("Request timed out"));
-  }, input.timeoutSeconds * 1000);
-
-  request.on("error", (error: NodeJS.ErrnoException) => {
-    clearTimeout(timeout);
-    const responseTime = Math.round(
-      performance.now() - startedAt,
+  for (const address of target.addresses) {
+    const result = await checkAddress(
+      target.url,
+      address,
+      input,
+      startedAt,
     );
-    const timedOut =
-      error.message === "Request timed out" ||
-      error.code === "ETIMEDOUT";
 
-    resolveResult({
-      status: timedOut ? "timeout" : "error",
+    if (
+      result.status !== "error" ||
+      !result.error?.startsWith("NETWORK_ERROR:") ||
+      !RETRYABLE_CONNECTION_ERRORS.has(result.error.slice("NETWORK_ERROR:".length))
+    ) {
+      return result;
+    }
+
+    lastResult = result;
+  }
+
+  return (
+    lastResult ?? {
+      status: "error",
       statusCode: null,
-      responseTime,
-      error: timedOut
-        ? "Request timed out"
-        : error.message || "Request failed",
+      responseTime: Math.round(performance.now() - startedAt),
+      error: "NETWORK_ERROR:UNKNOWN",
+    }
+  );
+}
+
+function checkAddress(
+  url: URL,
+  address: { address: string; family: 4 | 6 },
+  input: HttpCheckInput,
+  startedAt: number,
+): Promise<HttpCheckResult> {
+  return new Promise((resolve) => {
+    let settled = false;
+    let timeout: ReturnType<typeof setTimeout>;
+    const finish = (result: HttpCheckResult) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timeout);
+      resolve(result);
+    };
+
+    const request = (url.protocol === "https:" ? httpsRequest : httpRequest)(
+      url,
+      {
+        method: input.method,
+        agent: url.protocol === "https:" ? httpsAgent : httpAgent,
+        lookup: (_hostname, options, callback) => {
+          if (typeof options === "object" && options.all) {
+            callback(null, [address]);
+            return;
+          }
+
+          callback(null, address.address, address.family);
+        },
+      },
+      (response) => {
+        let responseBytes = 0;
+        const drainTimeout = setTimeout(
+          () => response.destroy(),
+          RESPONSE_DRAIN_TIMEOUT_MS,
+        );
+        response.on("data", (chunk: Buffer) => {
+          responseBytes += chunk.length;
+          if (responseBytes > MAX_RESPONSE_BYTES) {
+            response.destroy();
+          }
+        });
+        response.on("end", () => clearTimeout(drainTimeout));
+        response.on("close", () => clearTimeout(drainTimeout));
+        response.on("error", () => clearTimeout(drainTimeout));
+        response.resume();
+
+        const statusCode = response.statusCode ?? null;
+        finish({
+          status:
+            statusCode !== null && statusCode >= 200 && statusCode < 300
+              ? "success"
+              : "failed",
+          statusCode,
+          responseTime: Math.round(performance.now() - startedAt),
+          error:
+            statusCode !== null && statusCode >= 200 && statusCode < 300
+              ? null
+              : statusCode === null
+                ? "Request failed"
+                : `HTTP ${statusCode}`,
+        });
+      },
+    );
+
+    timeout = setTimeout(() => {
+      request.destroy(new Error("Request timed out"));
+    }, input.timeoutSeconds * 1000);
+
+    request.on("error", (error: NodeJS.ErrnoException) => {
+      const code = error.code;
+      const timedOut =
+        error.message === "Request timed out" ||
+        code === "ETIMEDOUT";
+
+      finish({
+        status: timedOut ? "timeout" : "error",
+        statusCode: null,
+        responseTime: Math.round(performance.now() - startedAt),
+        error: timedOut
+          ? "Request timed out"
+          : code && /^[A-Z0-9_]{2,40}$/.test(code)
+            ? `NETWORK_ERROR:${code}`
+            : "NETWORK_ERROR:UNKNOWN",
+      });
     });
+
+    request.end();
   });
-
-  request.end();
-
-  return resultPromise;
 }

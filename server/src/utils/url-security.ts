@@ -27,6 +27,7 @@ export interface SafeTarget {
   url: URL;
   address: string;
   family: 4 | 6;
+  addresses: Array<{ address: string; family: 4 | 6 }>;
 }
 
 function ipv4ToNumber(ip: string): number {
@@ -214,5 +215,6 @@ export async function buildSafeTargetUrl(
     url: target,
     address: address.address,
     family: address.family,
+    addresses,
   };
 }

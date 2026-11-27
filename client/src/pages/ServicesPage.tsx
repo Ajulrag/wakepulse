@@ -184,6 +184,30 @@ function getSafeServiceErrorMessage(error: string | null): string | null {
     return 'A network error prevented the check.'
   }
 
+  const networkError = /^NETWORK_ERROR:([A-Z0-9_]+)$/.exec(error)
+  if (networkError) {
+    const code = networkError[1]
+    if (code === 'ENETUNREACH' || code === 'EHOSTUNREACH') {
+      return 'The server cannot route to this service address. Check the server’s outbound network access.'
+    }
+    if (code === 'ECONNREFUSED') {
+      return 'The service refused the connection. Check its URL, port, and whether it is running.'
+    }
+    if (code === 'EADDRNOTAVAIL') {
+      return 'The server could not open a network connection. Check its network configuration.'
+    }
+    if (code === 'ECONNRESET') {
+      return 'The service or a proxy reset the connection. Check the service and any reverse proxy.'
+    }
+    if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+      return 'The server could not resolve the service hostname. Check the URL and server DNS.'
+    }
+    if (code === 'ERR_INVALID_IP_ADDRESS') {
+      return 'The monitoring server rejected its DNS lookup result. Redeploy the latest server update and retry.'
+    }
+    return `The connection failed (${code}). Check the service address and the server’s outbound network access.`
+  }
+
   const httpStatus = /^HTTP ([1-5]\d{2})$/.exec(error)
   if (httpStatus) {
     return `HTTP ${httpStatus[1]} response`

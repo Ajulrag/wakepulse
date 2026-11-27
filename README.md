@@ -130,3 +130,17 @@ history. Visitor analytics count normalized page views and anonymous browser
 sessions only; IP addresses, account identities, and URL query strings are not
 stored. Visitor events are automatically deleted after 90 days, and browsers
 that send Do Not Track are not counted.
+
+If all service checks fail with a connection error, remember that checks run
+from the API container, not the browser. After deploying an update, inspect the
+specific network error shown by the service check and test egress from that
+container:
+
+```bash
+docker compose --env-file server/.env exec api node -e 'fetch("https://YOUR-SERVICE.example/health", { method: "HEAD" }).then((response) => console.log("HTTP", response.status)).catch((error) => { console.error(error.cause?.code || error.message); process.exit(1); })'
+```
+
+Replace the example URL with the service URL. If this command cannot connect,
+check the VPS outbound firewall/network rules, DNS, service hostname, port, and
+whether the target accepts connections from the VPS. The checker also retries
+other public IP addresses returned by DNS when a route is unreachable.
